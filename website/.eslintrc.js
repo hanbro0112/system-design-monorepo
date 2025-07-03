@@ -1,10 +1,19 @@
-import { defineConfig } from 'eslint/config';
-
-export default defineConfig({
-    
-    languageOptioms: {
+/* cSpell:disable */
+module.exports = {
+    // lint 環境
+    env: {
+        browser: true,
+        commonjs: true,
+        es6: true,
+        node: true,
+    },
+    extends: [
+        'eslint:recommended',
+        'airbnb-base',
+    ],
+    parserOptions: {
+        sourceType: 'module',
         ecmaVersion: 2020,
-        sourceType: "module",
     },
     rules: {
         /*
@@ -107,5 +116,17 @@ export default defineConfig({
         'require-await': 'off',
         // 語尾一定要加分號
         semi: ['error', 'always'],
+        // 允許使用 console.log
+        'no-console': 'off',
     },
-});
+
+    overrides: [
+        {
+            files: ['test/**/*.js'],
+            rules: {
+                // 為了方便寫 mock，關閉這條規則
+                'global-require': 'off',
+            },
+        },
+    ],
+};

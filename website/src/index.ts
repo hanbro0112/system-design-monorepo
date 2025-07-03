@@ -1,2 +1,2 @@
-console.log('Hello, World!')
-var a = 1
+console.log('Hello, World!');
+const a = 1;
