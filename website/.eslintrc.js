@@ -1,5 +1,6 @@
 /* cSpell:disable */
 module.exports = {
+    parser: 'babel-eslint',
     // lint 環境
     env: {
         browser: true,
