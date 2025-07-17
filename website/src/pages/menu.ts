@@ -2,8 +2,9 @@ const menu = {
     items: [
         {
             id: 'navigation',
-            title: 'Navigition',
+            title: 'Navigation',
             type: 'group',
+            icon: 'icon-navigation',
             children: [
                 {
                     id: 'dashboard',
@@ -14,6 +15,34 @@ const menu = {
                 }
             ]
         },
+        {
+            id: 'rate-limiting',
+            title: 'Rate Limiting',
+            type: 'group',
+            icon: 'icon-ui',
+            children: [
+                {
+                    id: 'function',
+                    title: 'Function',
+                    type: 'collapse',
+                    icon: 'feather icon-server',
+                    children: [
+                        {
+                            id: 'button 1',
+                            title: 'button 1',
+                            type: 'item',
+                            url: '#',
+                        },
+                        {
+                            id: 'button 2',
+                            title: 'button 2',
+                            type: 'item',
+                            url: '#',
+                        }
+                    ]
+                }
+            ]
+        }
     ]
 }
 
