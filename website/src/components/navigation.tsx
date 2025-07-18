@@ -16,6 +16,9 @@ export const Navigation = () => {
     const navClass = ['pcoded-navbar'];
     const navBarClass = ['navbar-wrapper'];
 
+    // 固定展開
+    navClass.push('mob-open'); 
+
     const navContent = (
         <div className={navBarClass.join(' ')}>
             <NavLogo />

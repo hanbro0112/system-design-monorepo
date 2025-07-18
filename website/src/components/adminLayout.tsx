@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigation } from './navigation';
+import { NavBar } from './navbar';
 
 export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     let mainClass = ['pcoded-wrapper'];
@@ -7,6 +8,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     let common = (
         <React.Fragment>
             <Navigation />
+            <NavBar />
         </React.Fragment>
     );
     
