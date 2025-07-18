@@ -5,6 +5,9 @@ import Image from 'next/image';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { ListGroup, Card } from 'react-bootstrap';
 
+// redux
+import { navigationStore, navigationActionType } from '@/store/navigation';
+
 import sidebarImage from '@/assets/images/sidebar.png';
 
 import type { MenuItem } from '@/pages/menu';  
@@ -104,7 +107,7 @@ const NavItem = ({ item }: { item: MenuItem }) => {
     );
 }
 
-const NavCollapse = ({ collapse, type }: { collapse: MenuItem, type: String }) => {
+const NavCollapse = ({ collapse, type }: { collapse: MenuItem, type: string }) => {
     const navItems = collapse.children ? collapse.children.map((item: MenuItem) => {
         switch (item.type) {
             case 'collapse':
@@ -120,10 +123,29 @@ const NavCollapse = ({ collapse, type }: { collapse: MenuItem, type: String }) =
     const navLinkClass = ['nav-link'];
     const navItemClass = ['nav-item', 'pcoded-hasmenu'];
     
+    const { isOpen, isTrigger }: { isOpen: string[], isTrigger: string[] } = navigationStore.getState();
+    const openIndex = isOpen.findIndex((id) => id === collapse.id);
+    if (openIndex !== -1) {
+        navItemClass.push('active');
+    }
+
+    const triggerIndex = isTrigger.findIndex((id) => id === collapse.id);
+    if (triggerIndex !== -1) {
+        navItemClass.push('pcoded-trigger');
+    }
+
     const subContent = (
         <React.Fragment>
             <Link href="#">
-                <a className={navLinkClass.join(' ')}>
+                <a className={navLinkClass.join(' ')}
+                    onClick={() => navigationStore.dispatch({
+                        type: navigationActionType.TOGGLE_NAVIGATION,
+                        menu: {
+                            id: collapse.id,
+                            type
+                        }
+                    })}
+                >
                     <NavIcon items={collapse} />
                     {itemTitle}
                 </a>
@@ -135,7 +157,7 @@ const NavCollapse = ({ collapse, type }: { collapse: MenuItem, type: String }) =
     ) 
 
     const mainContent = (
-        <ListGroup.Item as="li" bsPrefix=" " className={navItemClass.join('')}>
+        <ListGroup.Item as="li" bsPrefix=" " className={navItemClass.join(' ')}>
             {subContent}
         </ListGroup.Item>
     )

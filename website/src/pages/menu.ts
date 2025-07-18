@@ -1,4 +1,6 @@
-const menu = {
+// id 需唯一
+
+export default {
     items: [
         {
             id: 'navigation',
@@ -54,5 +56,3 @@ export type MenuItem = {
     url?: string,
     children?: MenuItem[],
 }
-
-export default menu;
