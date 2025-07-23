@@ -17,8 +17,10 @@ export const Navigation = () => {
     const navBarClass = ['navbar-wrapper'];
 
     // 固定展開
-    navClass.push('mob-open'); 
-
+    // navClass.push('mob-open');
+    // 站位 
+    navClass.push('navbar-fixed'); 
+    
     const navContent = (
         <div className={navBarClass.join(' ')}>
             <NavLogo />
@@ -91,18 +93,18 @@ const NavItem = ({ item }: { item: MenuItem }) => {
     const itemTitle = item.icon ? <span className="pcoded-mtext">{item.title}</span>: item.title;
     
     const subContent = (
-        <Link href={item.url!} target="">
-            <a className="nav-link" >
-                <NavIcon items={item} />
-                {itemTitle}
-            </a>
+        <Link href={item.url!} target="" className="nav-link">
+            <NavIcon items={item} />
+            {itemTitle}
         </Link>
     )
 
     const mainContent = (
-        <ListGroup.Item as="li" bsPrefix=" ">
-            {subContent}
-        </ListGroup.Item>
+        <ul>
+            <ListGroup.Item as="li" bsPrefix=" ">
+                {subContent}
+            </ListGroup.Item>
+        </ul>
     )
 
     return (
@@ -139,8 +141,7 @@ const NavCollapse = ({ collapse, type }: { collapse: MenuItem, type: string }) =
 
     const subContent = (
         <React.Fragment>
-            <Link href="#">
-                <a className={navLinkClass.join(' ')}
+            <Link href="#" className={navLinkClass.join(' ')}
                     onClick={() => navigationStore.dispatch({
                         type: navigationActionType.TOGGLE_NAVIGATION,
                         menu: {
@@ -151,7 +152,6 @@ const NavCollapse = ({ collapse, type }: { collapse: MenuItem, type: string }) =
                 >
                     <NavIcon items={collapse} />
                     {itemTitle}
-                </a>
             </Link>
             <ListGroup variant="flush" bsPrefix=" " className={"pcoded-submenu"}>
                 {navItems}
