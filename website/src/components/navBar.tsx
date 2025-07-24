@@ -168,13 +168,6 @@ const NavRight = () => {
           </Dropdown>
         </ListGroup.Item>
         <ListGroup.Item as="li" bsPrefix=" ">
-          <Dropdown>
-            <Dropdown.Toggle as={Link} variant="link" to="#" className="displayChatbox" onClick={() => setListOpen(true)}>
-              <i className="icon feather icon-mail" />
-            </Dropdown.Toggle>
-          </Dropdown>
-        </ListGroup.Item>
-        <ListGroup.Item as="li" bsPrefix=" ">
           <Dropdown align={'end'} className="drp-user">
             <Dropdown.Toggle as={Link} variant="link" href="#" id="dropdown-basic">
               <i className="icon feather icon-settings" />
