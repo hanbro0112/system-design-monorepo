@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-standalone
+  labels:
+    app: redis-standalone
+  namespace: dev
+spec:
+  replicas: 1 # 單機模式，所以只運行一個副本
+  selector:
+    matchLabels:
+      app: redis-standalone
+  template:
+    metadata:
+      labels:
+        app: redis-standalone
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        command: ["redis-server"]
+        args:
+        - "/etc/redis/redis.conf" # 引用 ConfigMap 中的配置
+        - "--requirepass $(REDIS_PASSWORD)" # 使用環境變量中的密碼
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-standalone-secret # 引用 Secret 中的密碼
+              key: redis-password
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-config-volume
+          mountPath: /etc/redis/ # 挂載 ConfigMap 配置文件
+        - name: redis-data-volume
+          mountPath: /data # 挂載 PVC 用於持久化存儲
+      volumes:
+        - name: redis-config-volume
+          configMap:
+            name: redis-standalone-config # ConfigMap 名稱
+        - name: redis-data-volume
+          persistentVolumeClaim:
+            claimName: redis-standalone-pvc # PVC 名稱
