@@ -6,4 +6,10 @@ services:
       ash -c "cd app && npm install && npm start"
     volumes:
       - ./distributed-rate-limiter:/app # 挂載本地目錄到容器 即時更新
-    network_mode: host # 使用主機網路模式
+    ports:
+      - "3000:3000" # 映射容器的 3000
+    environment:
+      # 將連線地址設定為 host.docker.internal
+      # 這會讓容器連線到你的本機電腦
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379

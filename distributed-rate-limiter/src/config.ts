@@ -2,11 +2,10 @@ require('dotenv').config();
 
 const config = {
     redis: {
-        host: '127.0.0.1',
-        port: 6379,
-        username: 'distributed-rate-limiter',
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: process.env.REDIS_PORT || 6379,
         password: process.env.REDIS_PASSWORD,
     }
 }
-console.log('Redis config:', config.redis);
+
 export default config;

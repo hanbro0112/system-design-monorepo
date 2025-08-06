@@ -1,6 +1,6 @@
 import express from 'express';
 import config from './config';
-import redis from './redis';
+import RedisUtils from './redis/utils';
 
 const app = express();
 app.use(express.json());
@@ -10,13 +10,8 @@ app.get('/', (req, res) => {
 });
 
 app.get('/test', async (req, res) => {
-    redis.set('test', 'test', (err, result) => {
-        if (err) {
-            console.error('Error setting test key in Redis:', err);
-            return res.status(500).send('Error setting test key in Redis');
-        }
-        console.log('Test key set successfully:', result);
-    });
+    const result = await RedisUtils.getLimiterList();
+    console.log('Limiter List:', result);
     res.status(200).send("Redis is connected and working!");
 })
 // // { api, user } 限流接口

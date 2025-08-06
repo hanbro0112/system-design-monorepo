@@ -105,3 +105,8 @@ data:
 
     # 客戶端最大空閒時間（秒), 超過這個時間沒有操作的連線會被關閉, 0 表示永不超時
     timeout 0
+
+    # 是否啟用 Redis 的 Keyspace Notifications, K: keyspace, E: keyevent, h: hash
+    # 這允許 Redis 發送事件通知到客戶端，例如鍵被修改、刪除等 (沒有鍵值)
+    # 設定哈希操作以更新限流器設定 
+    # notify-keyspace-events "Kh"
