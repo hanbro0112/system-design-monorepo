@@ -7,7 +7,7 @@ services:
     volumes:
       - ./distributed-rate-limiter:/app # 挂載本地目錄到容器 即時更新
     ports:
-      - "3000:3000" # 映射容器的 3000
+      - "4000:4000" # 映射容器的 4000
     environment:
       # 將連線地址設定為 host.docker.internal
       # 這會讓容器連線到你的本機電腦

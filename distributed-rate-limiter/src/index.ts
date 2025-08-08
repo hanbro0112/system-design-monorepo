@@ -1,18 +1,20 @@
 import express from 'express';
+import cors from 'cors';
 import config from './config';
-import RedisUtils from './redis/utils';
+import controller from './rate-limiter'
 
 const app = express();
+app.use(cors());
 app.use(express.json());
+
 
 app.get('/', (req, res) => {
     res.status(200).send('Distributed Rate Limiter Server is running');
 });
 
-app.get('/test', async (req, res) => {
-    const result = await RedisUtils.getLimiterList();
-    console.log('Limiter List:', result);
-    res.status(200).send("Redis is connected and working!");
+app.get('/rate-limiter', async (req, res) => {
+    const result = await controller.getRateLimiterList();
+    res.status(200).send(result);
 })
 // // { api, user } 限流接口
 // app.post('/', rateLimiter, (req, res) => res.status(200).send('OK'));
@@ -32,7 +34,7 @@ app.get('/test', async (req, res) => {
 // app.get('/status/user', );
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Distributed-Rate-Limiter Server is running on http://localhost:${PORT}`);
 });

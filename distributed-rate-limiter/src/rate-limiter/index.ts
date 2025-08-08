@@ -1,7 +1,7 @@
 import fs from 'fs';
 import * as _ from '../constants';
 import { redisClient } from '../redis';
-import { RateLimiter, response } from './typeModel';  
+import { RateLimiter, rateLimiterList, response } from './typeModel';  
 
 class Controller {
     private rClass: Record<string, RateLimiter> = {};
@@ -20,9 +20,9 @@ class Controller {
         }
     }
 
-    async getRateLimiterList(): Promise<Record<string, string>> {
+    async getRateLimiterList(): Promise<rateLimiterList> {
         const result = await redisClient.hgetall(_.RATE_LIMITER_LIST);
-        const newResult: Record<string, string> = {};
+        const newResult: rateLimiterList = {};
         for (const key in result) {
             newResult[key] = JSON.parse(result[key]);
         }

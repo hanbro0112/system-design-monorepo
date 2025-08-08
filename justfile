@@ -10,10 +10,12 @@ frontend-dev:
     cd website && npm install && npm run dev
 
 local:
+    docker compose up -d
     kubectl create namespace dev
     just redis
 
 local-down:
+    docker compose down
     just redis-clear
     kubectl delete namespace dev
 

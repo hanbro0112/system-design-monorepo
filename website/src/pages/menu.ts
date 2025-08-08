@@ -24,16 +24,16 @@ export default {
             icon: 'icon-ui',
             children: [
                 {
-                    id: 'function',
-                    title: 'Function',
+                    id: 'algorithm',
+                    title: 'Algorithm',
                     type: 'collapse',
                     icon: 'feather icon-server',
                     children: [
                         {
-                            id: 'button 1',
-                            title: 'button 1',
+                            id: 'token bucket',
+                            title: 'token bucket',
                             type: 'item',
-                            url: '#',
+                            url: 'distributed-rate-limiter/token-bucket',
                         },
                         {
                             id: 'button 2',

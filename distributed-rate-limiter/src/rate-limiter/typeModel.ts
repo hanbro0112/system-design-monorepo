@@ -1,3 +1,9 @@
+export type rateLimiterList = Record<string, {
+    method: string,
+    config: Record<string, number>,
+    createTime: number
+}>
+
 export interface RateLimiter {
     // 執行
     run(key: string): Promise<response>;
