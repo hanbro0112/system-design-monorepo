@@ -1,0 +1,29 @@
+export interface RateLimiter {
+    // 執行
+    run(key: string): Promise<response>;
+    
+    // 設定
+    set(key: string, config: Record<string, number>): Promise<boolean>;
+
+    // 刪除
+    delete(key: string): Promise<boolean>;
+
+}
+
+export type response = 
+    tokenBucketResponse |
+    leakyBucketResponse;
+
+export type tokenBucketResponse = boolean;
+export type leakyBucketResponse = boolean;
+
+
+export type tokenBucketConfig = {
+    rate: number; // 每秒補充令牌數量
+    capacity: number; // 桶容量
+}
+
+export type leakyBucketConfig = {
+    leakRate: number; // 每秒漏水速率
+    capacity: number; // 桶容量
+}

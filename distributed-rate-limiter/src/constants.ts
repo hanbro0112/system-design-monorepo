@@ -1,7 +1,7 @@
-export const RATE_LIMITER_LIST = 'rate-limiter-list';
+export const RATE_LIMITER_LIST = 'rate_limiter_list';
 
-export const TOKEN_BUCKET = 'token-bucket';
-export const LEAKY_BUCKET = 'leaky-bucket';
-export const SLIDING_WINDOW_LOG = 'sliding-window-log';
-export const FIXED_WINDOW_COUNTER = 'fixed-window-counter';
-export const SLIDING_WINDOW_COUNTER = 'sliding-window-counter';
+export const TOKEN_BUCKET = 'token_bucket';
+export const LEAKY_BUCKET = 'leaky_bucket';
+export const SLIDING_WINDOW_LOG = 'sliding_window_log';
+export const FIXED_WINDOW_COUNTER = 'fixed_window_counter';
+export const SLIDING_WINDOW_COUNTER = 'sliding_window_counter';

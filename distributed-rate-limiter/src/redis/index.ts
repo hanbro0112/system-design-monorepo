@@ -1,3 +1,4 @@
+import fs from 'fs';
 import redis from 'ioredis';
 import config from '../config';
 import * as _ from '../constants';
@@ -13,16 +14,18 @@ redisClient.on('error', (err) => {
     console.error('Redis error:', err);
 });
 
-// Pub/Sub 只能使用單獨的連接
-// 訂閱限流器列表更新
-const subscriber = new redis(redisConfig);
+// lua scripts
+try {
+    const files = fs.readdirSync(`${__dirname}/lua`);
 
-subscriber.subscribe(_.RATE_LIMITER_LIST, (err) => {
-    if (err) {
-        console.error(`Failed to subscribe to ${_.RATE_LIMITER_LIST}`, err);
-    } else {
-        console.log(`Subscribed to ${_.RATE_LIMITER_LIST}`);
-    }
-});
+    files.forEach(file => {
+        const title = file.replace('.lua', '');
+        redisClient.defineCommand(title, {
+            lua: fs.readFileSync(`${__dirname}/lua/${file}`, 'utf8'),
+        })
+    })
+} catch (err) {
+    throw Error(`Error reading lua directory: ${err}`);
+}
 
-export { redisClient, subscriber };
+export { redisClient };
