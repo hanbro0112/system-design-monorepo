@@ -1,5 +1,6 @@
 import controller from './rate-limiter';
 import * as _ from './constants';
+import { randomUUID } from 'crypto';
 
 const config = {
     [_.TOKEN_BUCKET]: {
@@ -18,14 +19,15 @@ async function getList() {
 
 
 async function main() {
-    const method = _.LEAKY_BUCKET;
-    await controller.setRateLimiter('testKey', method, config[method]);
+    const method = _.TOKEN_BUCKET;
+    const key = randomUUID().replace(/-/g, '');
+    await controller.setRateLimiter(key, method, config[method]);
 
     getList();
     
     const result: any = [];
     const arr = new Array(20).fill(async () => {
-        const res = await controller.runRateLimiter('testKey', method);
+        const res = await controller.runRateLimiter(key, method);
         result.push(res);
     })
     
@@ -36,9 +38,9 @@ async function main() {
 
     await new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
     console.log('Time taken:', Date.now() - startTime, 'ms');
-    console.log(await controller.runRateLimiter('testKey', method));
+    console.log(await controller.runRateLimiter(key, method));
 
-    // await controller.deleteRateLimiter('testKey', method);
+    // await controller.deleteRateLimiter(key, method);
     // getList();
 }
 

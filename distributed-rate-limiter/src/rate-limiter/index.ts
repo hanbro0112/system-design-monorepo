@@ -35,7 +35,7 @@ class Controller {
             await redisClient.hset(_.RATE_LIMITER_LIST, key, JSON.stringify({
                 method,
                 config,
-                createTime: Math.floor(Date.now() / 1000)
+                createTime: Date.now()
             }));
         }
         return isSuccess;

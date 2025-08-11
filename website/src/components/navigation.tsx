@@ -8,8 +8,6 @@ import { ListGroup, Card } from 'react-bootstrap';
 // redux
 import { navigationStore, navigationActionType } from '@/store/navigation';
 
-import sidebarImage from '@/assets/images/sidebar.png';
-
 import type { MenuItem } from '@/pages/menu';  
 
 export const Navigation = () => {
@@ -176,15 +174,18 @@ const NavCard = () => {
         <div className="p-20">
           <Card className="pro-card">
               <Card.Body>
-                  <Image src={sidebarImage} className="img-radius " alt="User-Profile" width={50} height={50} />
-                  <h5 className="text-white">Kick</h5>
-                  <p className="text-white">Knock</p>
+                  {/* <Image src={} className="img-radius " alt="User-Profile" width={50} height={50} /> */}
+                  <h5 className="text-white"></h5>
+                  <p className="text-white"></p>
                   <a
                     href="#"
+                    onClick={() => {
+                        window.location.reload()
+                    }}
                     target={itemTarget}
                     className="btn text-white btn-primary"
                   >
-                    Reset
+                    Reload
                   </a>
               </Card.Body>
           </Card>

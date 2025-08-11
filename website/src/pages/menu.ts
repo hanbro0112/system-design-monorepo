@@ -26,25 +26,40 @@ export default {
                 {
                     id: 'algorithm',
                     title: 'Algorithm',
-                    type: 'collapse',
+                    type: 'item',
                     icon: 'feather icon-server',
-                    children: [
-                        {
-                            id: 'token bucket',
-                            title: 'token bucket',
-                            type: 'item',
-                            url: 'distributed-rate-limiter/token-bucket',
-                        },
-                        {
-                            id: 'button 2',
-                            title: 'button 2',
-                            type: 'item',
-                            url: '#',
-                        }
-                    ]
+                    url: '/distributed-rate-limiter',
                 }
             ]
-        }
+        },
+        // {
+        //     id: 'rate-limiting',
+        //     title: 'Rate Limiting',
+        //     type: 'group',
+        //     icon: 'icon-ui',
+        //     children: [
+        //         {
+        //             id: 'algorithm',
+        //             title: 'Algorithm',
+        //             type: 'collapse',
+        //             icon: 'feather icon-server',
+        //             children: [
+        //                 {
+        //                     id: 'token-bucket',
+        //                     title: 'token-bucket',
+        //                     type: 'item',
+        //                     url: '/distributed-rate-limiter/token-bucket',
+        //                 },
+        //                 {
+        //                     id: 'button 2',
+        //                     title: 'button 2',
+        //                     type: 'item',
+        //                     url: '#',
+        //                 }
+        //             ]
+        //         }
+        //     ]
+        // }
     ]
 }
 
