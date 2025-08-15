@@ -11,7 +11,6 @@ export async function getRateLimiterList(): Promise<rateLimiterList> {
             },
         });
         const data: rateLimiterList = await response.json();
-        console.log(data);
         return data;
     } catch (error) {
         console.error('Error fetching rate limiter list:', error);

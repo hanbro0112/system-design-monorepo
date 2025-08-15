@@ -4,7 +4,7 @@ import * as _ from '../constants';
 
 /**
  * 令牌桶限流器實現
- * rate: number; // 補充令牌速率每秒
+ * rate: number; // 每秒補充令牌速率
  * capacity: number; // 桶容量
  * tokens: number; // 當前令牌數量
  * lastRefill: number; // 上次補充令牌的時間戳 秒
