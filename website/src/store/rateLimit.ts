@@ -1,62 +1,47 @@
-import { legacy_createStore as createStore, applyMiddleware } from 'redux'
-import thunk, { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-import { rateLimiterListType } from '@/pages/distributed-rate-limiter/type';
-import { getRateLimiterList, setRateLimiter, deleteRateLimiter } from '@/api/RateLimiterService'
+import { rateLimiterListType, testerType } from '@/pages/distributed-rate-limiter/type';
+import { getRateLimiterList } from '@/api/RateLimiterService'
 import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typeModel';
 
-export enum Limiter {
-    SET_LIST = 'SET_LIST',
-}
 
-export enum Tester {
+const rateLimitSlice = createSlice({
+    name: 'rateLimit',
+    initialState: {
+        rateLimiterList: [] as rateLimiterListType,
+        tester: [] as testerType,
+            
+    },
+    reducers: {
 
-}
-
-type action =
-    | { type: Limiter, payload: rateLimiterListType }
-
-const initialState = {
-    rateLimiterList: [] as rateLimiterListType,
-
-} 
-
-const reducer = (state = initialState, action: action): typeof initialState => {
-    switch (action.type) {
-        case Limiter.SET_LIST:
-            return {
-                ...state,
-                rateLimiterList: action.payload || []
-            };
-
-        default:
-            return state;
+    },
+    // 使用 extraReducers 來處理 createAsyncThunk 生成的 action
+    extraReducers: (builder) => {
+        builder.addCase(fetchData.fulfilled, (state, action) => {
+            state.rateLimiterList = action.payload || [];
+        })
     }
-}
-/**
- * 設定 Redux Thunk 的類型
- * 讓 dispatch 函式能處理 thunk 函式
- */
-export type Thunk<ReturnType = void> = ThunkAction<
-  ReturnType,
-  typeof initialState,
-  null,
-  action
->;
+})
 
-export const rateLimitStore = createStore(reducer, applyMiddleware(thunk));
-
-export function fetchData() {
-    return async (dispatch: any, getState) => {
+export const fetchData = createAsyncThunk(
+    'rateLimit/fetchData',
+    async () => {
         const list: rateLimiterList = await getRateLimiterList();
         const new_list = Object.keys(list).map(key => ({
             key,
             ...list[key]
         }));
         new_list.sort((a, b) => - (a.createTime - b.createTime));
-        dispatch({
-            type: Limiter.SET_LIST,
-            payload: new_list
-        });
-    };
-}
+        return new_list;
+    }
+);
+
+export const setTester = createAsyncThunk(
+    'rateLimit/setTester',
+    async (tester: testerType) => {
+        
+        return tester;
+    }   
+)
+
+export default rateLimitSlice.reducer;
