@@ -12,10 +12,20 @@ app.get('/', (req, res) => {
     res.status(200).send('Distributed Rate Limiter Server is running');
 });
 
+app.get('/:key/:method', async (req, res) => {
+    const { key, method } = req.params;
+    const result = await controller.runRateLimiter(key, method);
+    if (result) {
+        res.status(200).send('Accepted!');
+    } else {
+        res.status(429).send('Rejected!');
+    }
+});
+
 app.get('/rate-limiter', async (req, res) => {
     const result = await controller.getRateLimiterList();
     res.status(200).send(result);
-})
+});
 
 app.post('/rate-limiter/:key', async (req, res) => {
     const key = req.params.key;

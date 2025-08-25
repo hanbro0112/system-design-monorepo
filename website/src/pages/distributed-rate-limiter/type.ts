@@ -6,17 +6,23 @@ export type rateLimiterListType = Array<
     createTime: number; 
 }>;
 
-export type testerType = Array<{
+
+export type testerType = Array<testConfig>;
+
+export type testConfig = {
     key: string;
     method: string;
     frequency: number;
     repeat: number;
     // 每秒數據
-    data?: Array<{
-        TotalRequest: number;
-        SuccessRequest: number;
-        FailRequest: number;
-        ExecutedRequest: number;
-        AverageExecutedTime: number;
-    }>;
-}>;
+    data: Array<testData>;
+    intervalId?: ReturnType<typeof setInterval>;
+};
+
+export type testData = {
+    TotalRequest: number;
+    FailRequest: number;
+    SuccessRequest: number;
+    ExecutedRequest: number;
+    AverageExecutedTime: number;
+};

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-import { rateLimiterListType, testerType } from '@/pages/distributed-rate-limiter/type';
+import { rateLimiterListType, testerType, testConfig, testData } from '@/pages/distributed-rate-limiter/type';
 import { getRateLimiterList } from '@/api/RateLimiterService'
 import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typeModel';
 
@@ -10,10 +10,25 @@ const rateLimitSlice = createSlice({
     initialState: {
         rateLimiterList: [] as rateLimiterListType,
         tester: [] as testerType,
-            
     },
     reducers: {
-
+        setTester(state, action: {payload: testConfig}) {
+            const tester = {
+                ...action.payload,
+                data: [],
+            }
+            state.tester.push(tester);
+            tester.intervalId = setTesterInterval(tester)
+        },
+        updateTester(state, action) {
+            const { key, data }: { key: string, data: testData } = action.payload;
+            const existingData = state.tester.find(item => item.key === key);
+            if (existingData) {
+                existingData.data.push(data);
+            } else {
+                
+            }
+        },
     },
     // 使用 extraReducers 來處理 createAsyncThunk 生成的 action
     extraReducers: (builder) => {
@@ -36,12 +51,14 @@ export const fetchData = createAsyncThunk(
     }
 );
 
-export const setTester = createAsyncThunk(
-    'rateLimit/setTester',
-    async (tester: testerType) => {
-        
-        return tester;
-    }   
-)
+
+function setTesterInterval(tester: testConfig) {
+    const { key, method, frequency, repeat, data, intervalId } = tester;
+    return setInterval(() => {
+        const count = 
+    }, 1000);
+}
+
+export const { setTester } = rateLimitSlice.actions;
 
 export default rateLimitSlice.reducer;
