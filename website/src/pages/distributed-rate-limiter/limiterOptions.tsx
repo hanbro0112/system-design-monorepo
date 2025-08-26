@@ -7,7 +7,7 @@ import { setRateLimiter } from '@/api/RateLimiterService';
 import { METHODS } from '#/distributed-rate-limiter/src/constants';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchData } from '@/store/rateLimit';
+import { fetchData, setTester } from '@/store/rateLimit';
 
 import { rateLimiterListType } from '@/pages/distributed-rate-limiter/type'
 
@@ -48,8 +48,8 @@ export default function LimiterOptions() {
     const [testKey, setTestKey] = useState<string>('');
 
     const dispatch = useDispatch<any>();
-    const { rateLimiterList }: { rateLimiterList: rateLimiterListType } = useSelector((state: any) => state.rateLimit);
-    
+    const rateLimiterList: rateLimiterListType = useSelector((state: any) => state.rateLimit.rateLimiterList);
+
     const methodHandler = (e: React.ChangeEvent<any>) => {
         setMethod(e.target.value);
     };
@@ -97,11 +97,19 @@ export default function LimiterOptions() {
     const handleTest = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const frequency = formData.get('frequency') ?? 10;
-        const repeat = formData.get('repeat') ?? 1;
+        const method = rateLimiterList.find(item => item.key === testKey)!.method;
+        const frequency = Number(formData.get('frequency') ?? 10);
+        const repeat = Number(formData.get('repeat') ?? 1);
+        
         // 本地運行測試
         const toastId = toast.loading(`Testing ${testKey}`);
-        
+        dispatch(setTester({
+            key: testKey,
+            method,
+            frequency,
+            repeat,
+            toastId
+        }));
     }
 
     return (

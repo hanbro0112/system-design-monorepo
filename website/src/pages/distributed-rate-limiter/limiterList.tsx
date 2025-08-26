@@ -19,7 +19,7 @@ import { rateLimiterListType } from '@/pages/distributed-rate-limiter/type'
 
 export default function LimiterList() {
     const dispatch = useDispatch<any>();
-    const { rateLimiterList }: { rateLimiterList: rateLimiterListType } = useSelector((state: any) => state.rateLimit);
+    const rateLimiterList: rateLimiterListType = useSelector((state: any) => state.rateLimit.rateLimiterList);
 
     const deleteClickHandler = async (key: string, method: string) => {
         const toastId = toast.loading(`Deleting ${key} : ${method}`);

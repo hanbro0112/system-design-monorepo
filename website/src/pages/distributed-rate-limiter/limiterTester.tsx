@@ -5,49 +5,98 @@ import toast from 'react-hot-toast';
 
 import { useSelector, useDispatch } from 'react-redux';
 
+import { testConfig } from './type';
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
-export default function LimiterTester() {
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+const options = {
+  responsive: true, // 讓圖表自動隨容器大小調整
+  plugins: {
+    legend: {
+      position: 'top' as const, // 設定圖例顯示在圖表上方
+    },
+    title: {
+      display: true,
+      text: 'Chart.js Line Chart',
+    },
+  },
+};
+
+function Tester({ testerKey }: { testerKey: string }) {
     const dispatch = useDispatch<any>();
-    const { testerList } = useSelector((state: any) => state.rateLimit);
-
+    const tester: testConfig = useSelector((state: any) => state.rateLimit.tester.find((item: testConfig) => item.key === testerKey));
+    
+    const startTime = tester.data[0].timestamp;
+    const label = new Array(60 * tester.repeat).fill(0).map((_, i) => i);
+    const chartData = {
+        labels: label,
+        datasets: [
+            {
+                label: 'TotalRequest',
+                data: tester.data.map(item => {}),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            },
+            {
+                label: 'SuccessRequest',
+                data: tester.data.map(item => item.successCount),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            },
+            {
+                label: 'FailedRequest',
+                data: tester.data.map(item => item.failedCount),
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            },
+        ],
+    };
 
     return (
-        <React.Fragment>
         <Row>
-            {/* Add Rate Limiter Section */}
             <Col sm={12} md={10}>
-                <Card>
-                    <Card.Header>
-                        <Card.Title as="h5">Limiter </Card.Title>
-                    </Card.Header>
-                    <Card.Body>
-                        {testerList}
-                        {/* <Form onSubmit={handleSubmit}>
-                            <Row>
-                                <Col md={5}>
-                                    <Form.Group className="mb-3" controlId="Key">
-                                        <Form.Label>Key </Form.Label>
-                                        <Form.Control type="text" name="Key" defaultValue={key} onChange={(e) => setKey(e.target.value)} />
-                                    </Form.Group>
-                                    <Form.Group className="mb-3" controlId="method">
-                                        <Form.Label>Method</Form.Label>
-                                        <Form.Control as="select" name="method" value={method} onChange={(e) => methodHandler(e)}>
-                                            <option value="" disabled>Click To Select </option>
-                                            {Object.values(METHODS).map(method => (
-                                                <option key={method} value={method}>{method}</option>
-                                            ))}
-                                        </Form.Control>
-                                    </Form.Group>
-                                    <Button variant="primary" type="submit">Submit</Button>
-                                </Col>
-                                <Options method={method} />
-                            </Row>
-                        </Form> */}
-                    </Card.Body>
-                </Card>
+            <Card>
+                <Card.Header>
+                    <Card.Title as="h5">{tester.method}: {tester.key}  </Card.Title>
+                </Card.Header>
+                <Card.Body>
+
+                
+                </Card.Body>
+            </Card>
             </Col>
         </Row>
-    </React.Fragment>
+    )
+}
+
+export default function LimiterTester() {
+    const testerKeyList = useSelector((state: any) => state.rateLimit.tester.map((item: testConfig) => item.key));
+    
+    return (
+        <React.Fragment>
+        {testerKeyList.map((key: string) => (
+            <Tester testerKey={key} />
+        ))}
+        </React.Fragment>
     );
 }

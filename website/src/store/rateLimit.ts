@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import { rateLimiterListType, testerType, testConfig, testData } from '@/pages/distributed-rate-limiter/type';
-import { getRateLimiterList } from '@/api/RateLimiterService'
+import { getRateLimiterList, runRateLimiter } from '@/api/RateLimiterService'
 import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typeModel';
+
+import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
 
 
 const rateLimitSlice = createSlice({
@@ -12,21 +15,30 @@ const rateLimitSlice = createSlice({
         tester: [] as testerType,
     },
     reducers: {
-        setTester(state, action: {payload: testConfig}) {
+        setTester(state, action: {payload: Omit<testConfig, 'data' | 'intervalId'>}) {
             const tester = {
                 ...action.payload,
-                data: [],
+                data: [{
+                    TotalRequest: 0,
+                    FailRequest: 0,
+                    SuccessRequest: 0,
+                    // ExecutedRequest: 0,
+                    // AverageExecutedTime: 0,
+                    timestamp: Date.now()
+                }],
             }
             state.tester.push(tester);
-            tester.intervalId = setTesterInterval(tester)
+            // tester.intervalId = setTesterInterval(tester);
         },
         updateTester(state, action) {
-            const { key, data }: { key: string, data: testData } = action.payload;
-            const existingData = state.tester.find(item => item.key === key);
+            const { key, method, data }: { key: string, method: string, data: testData } = action.payload;
+            const existingData = state.tester.find(item => item.key === key && item.method === method);
             if (existingData) {
                 existingData.data.push(data);
-            } else {
-                
+                if (existingData.data.length >= existingData.frequency * existingData.repeat) {
+                    clearInterval(existingData.intervalId);
+                    toast.dismiss(existingData.toastId);
+                }
             }
         },
     },
@@ -51,14 +63,24 @@ export const fetchData = createAsyncThunk(
     }
 );
 
-
 function setTesterInterval(tester: testConfig) {
-    const { key, method, frequency, repeat, data, intervalId } = tester;
-    return setInterval(() => {
-        const count = 
-    }, 1000);
+    const dispatch = useDispatch<any>();
+    const { key, method, frequency, data } = tester;
+
+    return setInterval(async () => {
+        const newData = { ...data[data.length - 1] };
+        const success = await runRateLimiter(key, method);
+        newData.TotalRequest += 1;
+        newData.timestamp = Date.now();
+        if (success) {
+            newData.SuccessRequest += 1
+        } else {
+            newData.FailRequest += 1
+        }
+        dispatch(updateTester({ key, method, data: newData }));
+    }, 60 * 1000 / frequency);
 }
 
-export const { setTester } = rateLimitSlice.actions;
+export const { setTester, updateTester } = rateLimitSlice.actions;
 
 export default rateLimitSlice.reducer;

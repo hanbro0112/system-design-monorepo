@@ -53,3 +53,19 @@ export async function deleteRateLimiter(key: string, method: string): Promise<bo
         return false;
     }
 }
+
+export async function runRateLimiter(key: string, method: string): Promise<boolean> {
+    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}/${key}/${method}`;
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Error sending request:', error);
+        return false;
+    }
+}

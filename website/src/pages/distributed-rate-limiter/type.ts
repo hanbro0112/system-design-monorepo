@@ -14,15 +14,17 @@ export type testConfig = {
     method: string;
     frequency: number;
     repeat: number;
-    // 每秒數據
+    // 數據
     data: Array<testData>;
     intervalId?: ReturnType<typeof setInterval>;
+    toastId: string;
 };
 
 export type testData = {
     TotalRequest: number;
     FailRequest: number;
     SuccessRequest: number;
-    ExecutedRequest: number;
-    AverageExecutedTime: number;
+    ExecutedRequest?: number;
+    AverageExecutedTime?: number;
+    timestamp: number;
 };
