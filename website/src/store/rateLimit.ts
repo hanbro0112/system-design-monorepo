@@ -1,11 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
-import { rateLimiterListType, testerType, testConfig, testData } from '@/pages/distributed-rate-limiter/type';
+import { rateLimiterListType, testerType, testConfig } from '@/pages/distributed-rate-limiter/type';
 import { getRateLimiterList, runRateLimiter } from '@/api/RateLimiterService'
 import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typeModel';
 
 import toast from 'react-hot-toast';
-import { useDispatch } from 'react-redux';
 
 
 const rateLimitSlice = createSlice({
@@ -15,29 +14,41 @@ const rateLimitSlice = createSlice({
         tester: [] as testerType,
     },
     reducers: {
-        setTester(state, action: {payload: Omit<testConfig, 'data' | 'intervalId'>}) {
+        setTester(state, action: {payload: {meta: Omit<testConfig, 'data' | 'startTime' |'intervalId'>, dispatch: any}}) {
+            const { key, method, frequency, repeat } = action.payload.meta;
             const tester = {
-                ...action.payload,
-                data: [{
-                    TotalRequest: 0,
-                    FailRequest: 0,
-                    SuccessRequest: 0,
-                    // ExecutedRequest: 0,
-                    // AverageExecutedTime: 0,
-                    timestamp: Date.now()
-                }],
+                ...action.payload.meta,
+                data: new Array(60 * repeat + 1).fill(0).map(_ => {
+                    return {
+                        TotalRequest: 0,
+                        FailRequest: 0,
+                        SuccessRequest: 0,
+                        // ExecutedRequest: 0,
+                        // AverageExecutedTime: 0,
+                    };
+                }),
+                startTime: Date.now(),
+            };
+             // 如果已經存在相同的測試器，則更新其配置
+            const origin = state.tester.find(item => item.key === key && item.method === method);
+            if (origin) {
+                clearInterval(origin.intervalId);
+                toast.error(`Cancel ${key}`, {id: origin.toastId});
+                Object.assign(origin, tester);
+            } else {
+                state.tester.push(tester);
             }
-            state.tester.push(tester);
-            // tester.intervalId = setTesterInterval(tester);
+            setTesterInterval(tester, action.payload.dispatch);
         },
         updateTester(state, action) {
-            const { key, method, data }: { key: string, method: string, data: testData } = action.payload;
+            const { key, method, result: { success, index } }: { key: string, method: string, result: { success: boolean, index: number } } = action.payload;
             const existingData = state.tester.find(item => item.key === key && item.method === method);
             if (existingData) {
-                existingData.data.push(data);
-                if (existingData.data.length >= existingData.frequency * existingData.repeat) {
-                    clearInterval(existingData.intervalId);
-                    toast.dismiss(existingData.toastId);
+                existingData.data[index].TotalRequest += 1;
+                if (success) {
+                    existingData.data[index].SuccessRequest += 1;
+                } else {
+                    existingData.data[index].FailRequest += 1;
                 }
             }
         },
@@ -63,22 +74,20 @@ export const fetchData = createAsyncThunk(
     }
 );
 
-function setTesterInterval(tester: testConfig) {
-    const dispatch = useDispatch<any>();
-    const { key, method, frequency, data } = tester;
-
-    return setInterval(async () => {
-        const newData = { ...data[data.length - 1] };
-        const success = await runRateLimiter(key, method);
-        newData.TotalRequest += 1;
-        newData.timestamp = Date.now();
-        if (success) {
-            newData.SuccessRequest += 1
-        } else {
-            newData.FailRequest += 1
+// dispatch 需在 react 組件內使用
+function setTesterInterval(tester: testConfig, dispatch: any) {
+    const { key, method, frequency, data, startTime } = tester;
+    const intervalId = setInterval(async () => {
+        const now = Math.ceil((Date.now() - startTime) / 1000);
+        if (now >= data.length) {
+            clearInterval(intervalId);
+            toast.success(`Done ${key}`, {id: tester.toastId});
+            return;
         }
-        dispatch(updateTester({ key, method, data: newData }));
+        const success = await runRateLimiter(key, method);
+        dispatch(updateTester({ key, method, result: { success, index: now }}));
     }, 60 * 1000 / frequency);
+    tester.intervalId = intervalId;
 }
 
 export const { setTester, updateTester } = rateLimitSlice.actions;

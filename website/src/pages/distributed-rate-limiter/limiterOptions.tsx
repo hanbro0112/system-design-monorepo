@@ -98,17 +98,26 @@ export default function LimiterOptions() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const method = rateLimiterList.find(item => item.key === testKey)!.method;
-        const frequency = Number(formData.get('frequency') ?? 10);
-        const repeat = Number(formData.get('repeat') ?? 1);
+        const frequencyRange = Number(formData.get('frequencyRange'));
+        const averageFreq = Number(formData.get('averageFreq'));
+        const burstRate = Number(formData.get('burstRate'));
         
+        const weights = new Array(frequencyRange).fill(0);
+        
+
         // 本地運行測試
         const toastId = toast.loading(`Testing ${testKey}`);
         dispatch(setTester({
-            key: testKey,
-            method,
-            frequency,
-            repeat,
-            toastId
+            meta: {
+                key: testKey,
+                method,
+                frequencyRange,
+                averageFreq,
+                burstRate,
+                weights,
+                toastId
+            }, 
+            dispatch
         }));
     }
 
@@ -187,13 +196,17 @@ export default function LimiterOptions() {
                                 <Col md={6}>
                                     {testKey && rateLimiterList.find(item => item.key === testKey) && (
                                         <>
-                                        <Form.Group className="mb-3" controlId="freq">
-                                            <Form.Label>Frequency (req/min)</Form.Label>
-                                            <Form.Control type="number" name="frequency" defaultValue={10} />
+                                        <Form.Group className="mb-3" controlId="frequencyRange">
+                                            <Form.Label>Frequency Range (req/second)</Form.Label>
+                                            <Form.Control type="number" name="frequencyRange" defaultValue={10} min={0}/>
                                         </Form.Group>
-                                        <Form.Group className="mb-3" controlId="repeat">
-                                            <Form.Label>Repeat Times</Form.Label>
-                                            <Form.Control type="number" name="repeat" defaultValue={1} />
+                                        <Form.Group className="mb-3" controlId="averageFreq">
+                                            <Form.Label>Average Frequency</Form.Label>
+                                            <Form.Control type="number" name="averageFreq" defaultValue={3} min={0}/>
+                                        </Form.Group>
+                                        <Form.Group className="mb-3" controlId="burstRate">
+                                            <Form.Label>Burst Rate % (trigger 2 * max)</Form.Label>
+                                            <Form.Control type="number" name="burstRate" defaultValue={5} min={0} max={100}/>
                                         </Form.Group>
                                         </>
                                     )}

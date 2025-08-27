@@ -12,10 +12,13 @@ export type testerType = Array<testConfig>;
 export type testConfig = {
     key: string;
     method: string;
-    frequency: number;
-    repeat: number;
-    // 數據
+    frequencyRange: number;
+    averageFreq: number;
+    burstRate: number;
+    weights: Array<number>;
+    // 數據每秒
     data: Array<testData>;
+    startTime: number;
     intervalId?: ReturnType<typeof setInterval>;
     toastId: string;
 };
@@ -26,5 +29,4 @@ export type testData = {
     SuccessRequest: number;
     ExecutedRequest?: number;
     AverageExecutedTime?: number;
-    timestamp: number;
 };
