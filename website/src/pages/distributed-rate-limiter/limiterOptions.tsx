@@ -17,11 +17,11 @@ function Options({ method } : {method: string}) {
             <Col md={7}>
                 <Form.Group className="mb-3" controlId="rate">
                     <Form.Label>rate (每秒補充令牌速率)</Form.Label>
-                    <Form.Control type="number" name="rate" defaultValue={1}/>
+                    <Form.Control type="number" name="rate" defaultValue={15}/>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="capacity">
                     <Form.Label>capacity (桶容量)</Form.Label>
-                    <Form.Control type="number" name="capacity" defaultValue={10}/>
+                    <Form.Control type="number" name="capacity" defaultValue={30}/>
                 </Form.Group>
             </Col>
         )
@@ -30,11 +30,11 @@ function Options({ method } : {method: string}) {
             <Col md={7}>
                 <Form.Group className="mb-3" controlId="leakRate">
                     <Form.Label>leakRate (每秒漏水速率)</Form.Label>
-                    <Form.Control type="text" name="leakRate" defaultValue={1}/>
+                    <Form.Control type="text" name="leakRate" defaultValue={15}/>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="capacity">
                     <Form.Label>capacity (桶容量)</Form.Label>
-                    <Form.Control type="text" name="capacity" defaultValue={10}/>
+                    <Form.Control type="text" name="capacity" defaultValue={30}/>
                 </Form.Group>
             </Col>
         )
@@ -97,13 +97,28 @@ export default function LimiterOptions() {
     const handleTest = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const method = rateLimiterList.find(item => item.key === testKey)!.method;
+        const method = rateLimiterList.find(item => item.key === testKey)?.method;
+        if (!method) {
+            return ;
+        }
         const frequencyRange = Number(formData.get('frequencyRange'));
         const averageFreq = Number(formData.get('averageFreq'));
         const burstRate = Number(formData.get('burstRate'));
         
-        const weights = new Array(frequencyRange).fill(0);
-        
+        const weights = new Array(frequencyRange + 1).fill(10);
+        let total = 0;
+        for (let i = 0; i < averageFreq; i++) {
+            weights[i] = 1 + i;
+            total += weights[i];
+        }
+        for (let i = frequencyRange; i > averageFreq; i--) {
+            weights[i] = 1 + (frequencyRange - i);
+            total += weights[i];
+        }
+        weights[averageFreq] = total;
+        for (let i = 1; i <= frequencyRange; i++) {
+            weights[i] += weights[i - 1];
+        }
 
         // 本地運行測試
         const toastId = toast.loading(`Testing ${testKey}`);
@@ -197,12 +212,12 @@ export default function LimiterOptions() {
                                     {testKey && rateLimiterList.find(item => item.key === testKey) && (
                                         <>
                                         <Form.Group className="mb-3" controlId="frequencyRange">
-                                            <Form.Label>Frequency Range (req/second)</Form.Label>
-                                            <Form.Control type="number" name="frequencyRange" defaultValue={10} min={0}/>
+                                            <Form.Label>Frequency Range (req/half second)</Form.Label>
+                                            <Form.Control type="number" name="frequencyRange" defaultValue={20} min={0}/>
                                         </Form.Group>
                                         <Form.Group className="mb-3" controlId="averageFreq">
                                             <Form.Label>Average Frequency</Form.Label>
-                                            <Form.Control type="number" name="averageFreq" defaultValue={3} min={0}/>
+                                            <Form.Control type="number" name="averageFreq" defaultValue={15} min={0}/>
                                         </Form.Group>
                                         <Form.Group className="mb-3" controlId="burstRate">
                                             <Form.Label>Burst Rate % (trigger 2 * max)</Form.Label>

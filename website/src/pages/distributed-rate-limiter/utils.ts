@@ -10,3 +10,16 @@ export const getAvatar = (key: string) => {
     const index = parseInt(key, 16) % avatars.length;
     return avatars[index];
 };
+
+export const getTasksNumber = (weights: number[], burstRate: number) => {
+    if (Math.random() * 100 <= burstRate) {
+        return 2 * weights.length; 
+    }
+    const weight = Math.random() * weights[weights.length - 1];
+    for (let i = 0; i < weights.length; i++) {
+        if (weight <= weights[i]) {
+            return i;
+        }
+    }
+    return 0;
+}

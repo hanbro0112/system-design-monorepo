@@ -6,6 +6,7 @@ import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typ
 
 import toast from 'react-hot-toast';
 
+import { getTasksNumber } from '@/pages/distributed-rate-limiter/utils';
 
 const rateLimitSlice = createSlice({
     name: 'rateLimit',
@@ -15,10 +16,10 @@ const rateLimitSlice = createSlice({
     },
     reducers: {
         setTester(state, action: {payload: {meta: Omit<testConfig, 'data' | 'startTime' |'intervalId'>, dispatch: any}}) {
-            const { key, method, frequency, repeat } = action.payload.meta;
+            const { key, method } = action.payload.meta;
             const tester = {
                 ...action.payload.meta,
-                data: new Array(60 * repeat + 1).fill(0).map(_ => {
+                data: new Array(121).fill(0).map(_ => {
                     return {
                         TotalRequest: 0,
                         FailRequest: 0,
@@ -41,17 +42,28 @@ const rateLimitSlice = createSlice({
             setTesterInterval(tester, action.payload.dispatch);
         },
         updateTester(state, action) {
-            const { key, method, result: { success, index } }: { key: string, method: string, result: { success: boolean, index: number } } = action.payload;
-            const existingData = state.tester.find(item => item.key === key && item.method === method);
-            if (existingData) {
-                existingData.data[index].TotalRequest += 1;
-                if (success) {
-                    existingData.data[index].SuccessRequest += 1;
-                } else {
-                    existingData.data[index].FailRequest += 1;
+            const { key, method, result, index }: { key: string, method: string, result: boolean[], index: number } = action.payload;
+            const existingTester = state.tester.find(item => item.key === key && item.method === method);
+            if (existingTester) {
+                existingTester.data[index].TotalRequest += result.length;
+                for (let success of result) {
+                    if (success) {
+                        existingTester.data[index].SuccessRequest += 1;
+                    } else {
+                        existingTester.data[index].FailRequest += 1;
+                    }
                 }
             }
         },
+        deleteTester(state, action) {
+            const { key, method } = action.payload;
+            const existingTester = state.tester.find(item => item.key === key && item.method === method);
+            if (existingTester) {
+                clearInterval(existingTester.intervalId);
+                toast.error(`Cancel ${key}`, {id: existingTester.toastId});
+                state.tester = state.tester.filter(item => item !== existingTester);
+            }
+        }
     },
     // 使用 extraReducers 來處理 createAsyncThunk 生成的 action
     extraReducers: (builder) => {
@@ -76,20 +88,30 @@ export const fetchData = createAsyncThunk(
 
 // dispatch 需在 react 組件內使用
 function setTesterInterval(tester: testConfig, dispatch: any) {
-    const { key, method, frequency, data, startTime } = tester;
+    const { key, method, burstRate, weights, data, startTime } = tester;
+    let index = 0;
     const intervalId = setInterval(async () => {
-        const now = Math.ceil((Date.now() - startTime) / 1000);
-        if (now >= data.length) {
+        index += 1;
+        // 每 15 秒暫停 3 秒
+        if (index >= 30 && index % 30 < 6) {
+            return ;
+        }
+        if (index >= data.length) {
             clearInterval(intervalId);
             toast.success(`Done ${key}`, {id: tester.toastId});
             return;
         }
-        const success = await runRateLimiter(key, method);
-        dispatch(updateTester({ key, method, result: { success, index: now }}));
-    }, 60 * 1000 / frequency);
+        const tasksNumber = getTasksNumber(weights, burstRate);
+        if (tasksNumber > 0) {
+             Promise.all(new Array(tasksNumber).fill(0).map(async () => runRateLimiter(key, method)))
+                .then((result) => {
+                    dispatch(updateTester({ key, method, result, index }));
+                });
+        }
+    }, 500);
     tester.intervalId = intervalId;
 }
 
-export const { setTester, updateTester } = rateLimitSlice.actions;
+export const { setTester, updateTester, deleteTester } = rateLimitSlice.actions;
 
 export default rateLimitSlice.reducer;

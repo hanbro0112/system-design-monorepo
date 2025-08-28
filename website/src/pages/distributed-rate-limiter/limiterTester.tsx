@@ -6,6 +6,9 @@ import toast from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { testConfig } from './type';
+import { setTester, deleteTester } from '@/store/rateLimit';
+
+import { motion, AnimatePresence } from 'framer-motion';
 
 import {
   Chart as ChartJS,
@@ -30,27 +33,43 @@ ChartJS.register(
   Legend
 );
 
+export default function LimiterTester() {
+    const testerKeyList = useSelector((state: any) => state.rateLimit.tester.map((item: testConfig) => item.key));
+    
+    return (
+        <React.Fragment>
+            <AnimatePresence>
+                {testerKeyList.map((key: string) => (
+                    <Tester testerKey={key} />
+                ))}
+            </AnimatePresence>
+        </React.Fragment>
+    );
+}
+
 function Tester({ testerKey }: { testerKey: string }) {
     const dispatch = useDispatch<any>();
     const tester: testConfig = useSelector((state: any) => state.rateLimit.tester.find((item: testConfig) => item.key === testerKey));
     
-    const label = new Array(tester.data.length).fill(0).map((_, i) => i);
-    const data = tester.data.slice(0, Math.min(Math.ceil((Date.now() - tester.startTime) / 1000) + 1, tester.data.length));
+    const label = new Array(tester.data.length).fill(0).map((_, i) => 0.5 * i);
+    const data = tester.data.slice(0, Math.min(2 * Math.floor((Date.now() - tester.startTime) / 1000), tester.data.length));
     const chartData = {
         labels: label,
         datasets: [
-            // {
-            //     label: 'TotalRequest',
-            //     data: data.map(item => item.TotalRequest),
-            //     borderColor: 'rgba(254, 229, 3, 1)',
-            //     backgroundColor: 'rgba(254, 229, 3, 1.0)',
-            // },
+            {
+                label: 'TotalRequest',
+                data: data.map(item => item.TotalRequest),
+                borderColor: 'rgba(254, 229, 3, 1)',
+                backgroundColor: 'rgba(254, 229, 3, 1.0)',
+                borderWidth: 2,
+                radius: 0
+            },
             {
                 label: 'SuccessRequest',
                 data: data.map(item => item.SuccessRequest),
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 1.0)',
-                borderWidth: 1,
+                borderWidth: 1.5,
                 radius: 0
             },
             {
@@ -58,7 +77,7 @@ function Tester({ testerKey }: { testerKey: string }) {
                 data: data.map(item => item.FailRequest),
                 borderColor: 'rgba(255, 99, 132, 1)',
                 backgroundColor: 'rgba(255, 99, 132, 1.0)',
-                borderWidth: 1,
+                borderWidth: 1.5,
                 radius: 0
             },
         ],
@@ -83,12 +102,12 @@ function Tester({ testerKey }: { testerKey: string }) {
         scales: {
             x: {
                 min: 0,
-                max: tester.data.length - 1,
+                max: 60,
                 type: 'linear'
             },
             y: {
                 min: 0,
-                max: 10,
+                max: tester.frequencyRange * 2,
             }
         }
     };
@@ -98,7 +117,32 @@ function Tester({ testerKey }: { testerKey: string }) {
             <Col sm={12} md={10}>
             <Card>
                 <Card.Header>
-                    <Card.Title as="h5">{tester.method}: {tester.key}  </Card.Title>
+                    <Card.Title as="h5" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>{tester.method}: {tester.key}</span>
+                        <span>
+                            <Button
+                                variant="link"
+                                size="sm"
+                                style={{ padding: 0, marginRight: 10 }}
+                                onClick={() => {
+                                    const toastId = toast.loading(`Testing ${tester.key}`);
+                                    dispatch(setTester({ meta: { ...tester, toastId }, dispatch }));
+                                }}
+                            >            
+                                <i className="fa fa-refresh" style={{ color: '#222', fontSize: 18 }} />
+                            </Button>
+                            <Button
+                                variant="link"
+                                size="sm"
+                                style={{ padding: 0, marginRight: 5 }}
+                                onClick={() => {
+                                    dispatch(deleteTester({ key: tester.key, method: tester.method }));
+                                }}
+                            >
+                                <i className="fa fa-trash" style={{ color: '#d32f2f', fontSize: 18 }} />
+                            </Button>
+                        </span>
+                    </Card.Title>
                 </Card.Header>
                 <Card.Body>
                     <Line options={options} data={chartData} />
@@ -107,16 +151,4 @@ function Tester({ testerKey }: { testerKey: string }) {
             </Col>
         </Row>
     )
-}
-
-export default function LimiterTester() {
-    const testerKeyList = useSelector((state: any) => state.rateLimit.tester.map((item: testConfig) => item.key));
-    
-    return (
-        <React.Fragment>
-        {testerKeyList.map((key: string) => (
-            <Tester testerKey={key} />
-        ))}
-        </React.Fragment>
-    );
 }

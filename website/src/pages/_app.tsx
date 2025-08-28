@@ -1,5 +1,6 @@
 import { AppProps } from 'next/app';
 import './_app.scss';
+import 'font-awesome/css/font-awesome.min.css';
 import { Toaster } from 'react-hot-toast';
 import { AdminLayout } from '@/components/adminLayout';
 import React from 'react';
