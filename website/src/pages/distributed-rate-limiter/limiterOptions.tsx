@@ -4,7 +4,7 @@ import { Button, Card, Row, Col, Form } from "react-bootstrap";
 import toast from 'react-hot-toast';
 
 import { setRateLimiter } from '@/api/RateLimiterService';
-import { FIXED_WINDOW_COUNTER, METHODS } from '#/distributed-rate-limiter/src/constants';
+import { METHODS } from '#/distributed-rate-limiter/src/constants';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchData, setTester } from '@/store/rateLimit';
@@ -17,11 +17,11 @@ function Options({ method } : {method: string}) {
             <Col md={7}>
                 <Form.Group className="mb-3" controlId="rate">
                     <Form.Label>rate (每秒補充令牌速率)</Form.Label>
-                    <Form.Control type="number" name="rate" defaultValue={15}/>
+                    <Form.Control key={method} type="number" name="rate" defaultValue={15}/>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="capacity">
                     <Form.Label>capacity (桶容量)</Form.Label>
-                    <Form.Control type="number" name="capacity" defaultValue={30}/>
+                    <Form.Control key={method} type="number" name="capacity" defaultValue={30}/>
                 </Form.Group>
             </Col>
         )
@@ -30,24 +30,37 @@ function Options({ method } : {method: string}) {
             <Col md={7}>
                 <Form.Group className="mb-3" controlId="leakRate">
                     <Form.Label>leakRate (每秒漏水速率)</Form.Label>
-                    <Form.Control type="text" name="leakRate" defaultValue={15}/>
+                    <Form.Control key={method} type="number" name="leakRate" defaultValue={15}/>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="capacity">
                     <Form.Label>capacity (桶容量)</Form.Label>
-                    <Form.Control type="text" name="capacity" defaultValue={30}/>
+                    <Form.Control key={method} type="number" name="capacity" defaultValue={30}/>
                 </Form.Group>
             </Col>
         )
-    } else if (method === FIXED_WINDOW_COUNTER) {
+    } else if (method === METHODS.FIXED_WINDOW_COUNTER) {
         return (
             <Col md={7}>
                 <Form.Group className="mb-3" controlId="timeWindows">
                     <Form.Label>時間窗口大小 (秒)</Form.Label>
-                    <Form.Control type="text" name="timeWindows" defaultValue={3}/>
+                    <Form.Control key={method} type="number" name="timeWindows" defaultValue={3}/>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="maxRequests">
                     <Form.Label>最大請求數</Form.Label>
-                    <Form.Control type="text" name="maxRequests" defaultValue={45}/>
+                    <Form.Control key={method} type="number" name="maxRequests" defaultValue={45}/>
+                </Form.Group>
+            </Col>
+        )
+    } else if (method === METHODS.SLIDING_WINDOW_LOG) {
+        return (
+            <Col md={7}>
+                <Form.Group className="mb-3" controlId="timeWindows">
+                    <Form.Label>時間窗口大小 (秒)</Form.Label>
+                    <Form.Control key={method} type="number" name="timeWindows" defaultValue={3}/>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="maxRequests">
+                    <Form.Label>最大請求數</Form.Label>
+                    <Form.Control key={method} type="number" name="maxRequests" defaultValue={45}/>
                 </Form.Group>
             </Col>
         )
