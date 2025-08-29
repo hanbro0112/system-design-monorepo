@@ -4,7 +4,7 @@ import { Button, Card, Row, Col, Form } from "react-bootstrap";
 import toast from 'react-hot-toast';
 
 import { setRateLimiter } from '@/api/RateLimiterService';
-import { METHODS } from '#/distributed-rate-limiter/src/constants';
+import { FIXED_WINDOW_COUNTER, METHODS } from '#/distributed-rate-limiter/src/constants';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchData, setTester } from '@/store/rateLimit';
@@ -35,6 +35,19 @@ function Options({ method } : {method: string}) {
                 <Form.Group className="mb-3" controlId="capacity">
                     <Form.Label>capacity (桶容量)</Form.Label>
                     <Form.Control type="text" name="capacity" defaultValue={30}/>
+                </Form.Group>
+            </Col>
+        )
+    } else if (method === FIXED_WINDOW_COUNTER) {
+        return (
+            <Col md={7}>
+                <Form.Group className="mb-3" controlId="timeWindows">
+                    <Form.Label>時間窗口大小 (秒)</Form.Label>
+                    <Form.Control type="text" name="timeWindows" defaultValue={3}/>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="maxRequests">
+                    <Form.Label>最大請求數</Form.Label>
+                    <Form.Control type="text" name="maxRequests" defaultValue={45}/>
                 </Form.Group>
             </Col>
         )
@@ -73,15 +86,10 @@ export default function LimiterOptions() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const config: Record<string, number> = {};
-        if (method === METHODS.TOKEN_BUCKET) {
-            config['rate'] = Number(formData.get('rate') ?? 1);
-            config['capacity'] = Number(formData.get('capacity') ?? 10);
-        } else if (method === METHODS.LEAKY_BUCKET) {
-            config['leakRate'] = Number(formData.get('leakRate') ?? 1);
-            config['capacity'] = Number(formData.get('capacity') ?? 10);
-        } else {
-            return ;
-        }
+        formData.forEach((value, key) => {
+            if (key === 'key' || key === 'method') return ;
+            config[key] = Number(value);
+        });
         // 提交表單
         const toastId = toast.loading(`Setting ${key} : ${method}`);
         const result = await setRateLimiter(key, method, config);
@@ -149,9 +157,9 @@ export default function LimiterOptions() {
                         <Form onSubmit={handleSubmit}>
                             <Row>
                                 <Col md={5}>
-                                    <Form.Group className="mb-3" controlId="Key">
+                                    <Form.Group className="mb-3" controlId="key">
                                         <Form.Label>Key </Form.Label>
-                                        <Form.Control type="text" name="Key" defaultValue={key} onChange={(e) => setKey(e.target.value)} />
+                                        <Form.Control type="text" name="key" defaultValue={key} onChange={(e) => setKey(e.target.value)} />
                                     </Form.Group>
                                     <Form.Group className="mb-3" controlId="method">
                                         <Form.Label>Method</Form.Label>

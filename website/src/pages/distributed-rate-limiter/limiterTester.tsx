@@ -8,8 +8,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { testConfig } from './type';
 import { setTester, deleteTester } from '@/store/rateLimit';
 
-import { motion, AnimatePresence } from 'framer-motion';
-
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -38,11 +36,9 @@ export default function LimiterTester() {
     
     return (
         <React.Fragment>
-            <AnimatePresence>
-                {testerKeyList.map((key: string) => (
-                    <Tester testerKey={key} />
-                ))}
-            </AnimatePresence>
+            {testerKeyList.map((key: string) => (
+                <Tester testerKey={key} />
+            ))}
         </React.Fragment>
     );
 }
@@ -50,9 +46,9 @@ export default function LimiterTester() {
 function Tester({ testerKey }: { testerKey: string }) {
     const dispatch = useDispatch<any>();
     const tester: testConfig = useSelector((state: any) => state.rateLimit.tester.find((item: testConfig) => item.key === testerKey));
-    
+    if (!tester) return null;
     const label = new Array(tester.data.length).fill(0).map((_, i) => 0.5 * i);
-    const data = tester.data.slice(0, Math.min(2 * Math.floor((Date.now() - tester.startTime) / 1000), tester.data.length));
+    const data = tester.data.slice(0, Math.min(2 * Math.round((Date.now() - tester.startTime) / 1000), tester.data.length));
     const chartData = {
         labels: label,
         datasets: [

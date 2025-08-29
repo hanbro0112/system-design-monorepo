@@ -18,11 +18,12 @@ export interface RateLimiter {
 
 export type response = 
     tokenBucketResponse |
-    leakyBucketResponse;
+    leakyBucketResponse |
+    fixedWindowCounterResponse;
 
 export type tokenBucketResponse = boolean;
 export type leakyBucketResponse = boolean;
-
+export type fixedWindowCounterResponse = boolean;
 
 export type tokenBucketConfig = {
     rate: number; // 每秒補充令牌數量
@@ -32,4 +33,9 @@ export type tokenBucketConfig = {
 export type leakyBucketConfig = {
     leakRate: number; // 每秒漏水速率
     capacity: number; // 桶容量
+}
+
+export type fixedWindowCounterConfig = {
+    timeWindows: number; // 時間窗口大小 (秒)
+    maxRequests: number; // 最大請求數
 }

@@ -61,7 +61,7 @@ const rateLimitSlice = createSlice({
             if (existingTester) {
                 clearInterval(existingTester.intervalId);
                 toast.error(`Cancel ${key}`, {id: existingTester.toastId});
-                state.tester = state.tester.filter(item => item !== existingTester);
+                state.tester = state.tester.filter(item => !(item.key === key && item.method === method));
             }
         }
     },
