@@ -64,6 +64,19 @@ function Options({ method } : {method: string}) {
                 </Form.Group>
             </Col>
         )
+    } else if (method === METHODS.SLIDING_WINDOW_COUNTER) {
+        return (
+            <Col md={7}>
+                <Form.Group className="mb-3" controlId="timeWindows">
+                    <Form.Label>時間窗口大小 (秒)</Form.Label>
+                    <Form.Control key={method} type="number" name="timeWindows" defaultValue={3}/>
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="maxRequests">
+                    <Form.Label>最大請求數</Form.Label>
+                    <Form.Control key={method} type="number" name="maxRequests" defaultValue={45}/>
+                </Form.Group>
+            </Col>
+        )
     }
     return <></>;
 }

@@ -6,6 +6,8 @@ import { redisClient } from '../redis';
  * 滑動窗口日誌限流器實現
  * timeWindows: number // 時間窗口大小 (秒)
  * maxRequests: number // 最大請求數
+ * 
+ * redis array to maintain logs
  */
 export default class SlidingWindowLog implements  RateLimiter {
     async run(key: string): Promise<slidingWindowLogResponse> {
