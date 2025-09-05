@@ -1,0 +1,9 @@
+node_modules/
+package-lock.json
+
+# dotenv environment file
+.env
+
+# next.js build output
+next-env.d.ts
+.next/

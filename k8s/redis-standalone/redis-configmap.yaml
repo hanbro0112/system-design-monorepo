@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-standalone-config
+  labels:
+    app: redis-standalone
+  namespace: dev
+data:
+  redis.conf: |
+    # Redis 綁定 IP 地址， 0.0.0.0 允許所有網卡監聽連線
+    # 在 Kubernetes 中，通常綁定 0.0.0.0 讓 Pod 內部可以監聽所有流量
+    bind 0.0.0.0
+    
+    # 是否啟用保護模式，保護模式會阻止外部連線
+    protected-mode no 
+
+    # Redis 監聽的端口號，預設是 6379
+    port 6379
+
+    # 工作目錄， RDB 和 AOF 檔案會儲存在這裡
+    # 確保這個目錄可以被 Redis 進程寫入，且與持久化儲存卷掛載點一致
+    dir /data
+
+    # 啟用 Redis 持久化選項
+    # 建議至少啟用 RDB 或 AOF 之一，以防止數據丟失
+
+    # --- RDB 持久化配置 (快照) ---
+    # 每當指定秒數和鍵值改變次數滿足時，自動執行儲存操作
+    # 900秒內有1個鍵被修改
+    save 900 1  
+    # 300秒內有10個鍵被修改
+    save 300 10   
+    # 60秒內有10000個鍵被修改
+    save 60 10000 
+    
+    # 當 RDB 寫入失敗時，是否停止接受寫入
+    stop-writes-on-bgsave-error yes
+    
+    # 是否對 RDB 文件進行壓縮
+    rdbcompression yes
+    
+    # 是否對載入的 RDB 文件進行數據完整性檢查
+    rdbchecksum yes
+    
+    # RDB 文件名
+    dbfilename dump.rdb
+
+    # --- AOF 持久化配置 (僅追加檔案) ---
+    # 啟用 AOF 持久化
+    appendonly yes
+    
+    # AOF 文件名
+    appendfilename "appendonly.aof"
+    
+    # AOF 同步策略：
+    # always: 每個寫入命令都同步到磁碟，最慢但最安全。
+    # everysec: 每秒同步一次，平衡性能和數據安全，推薦。
+    # no: 由作業系統決定，最快但最不安全。
+    appendfsync everysec
+    
+    # 當 AOF 重寫 (bgrewriteaof) 正在進行時，是否阻止寫入操作
+    no-appendfsync-on-rewrite no
+    
+    # 當 AOF 檔案大小增長達到指定百分比時，自動觸發重寫
+    # (例如，當 AOF 大小比上次重寫後增長了 100% 並且大於 64MB)
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+
+    # --- 記憶體管理 ---
+    # 最大記憶體限制，當達到限制時， Redis 會根據淘汰策略刪除鍵
+    # 例如： maxmemory 256mb
+    maxmemory 1gb
+
+    # 記憶體淘汰策略 (當達到 maxmemory 時如何刪除鍵):
+    # volatile-lru: 從設定了過期時間的鍵中，移除最近最少使用的鍵。
+    # allkeys-lru: 從所有鍵中，移除最近最少使用的鍵。
+    # volatile-lfu: 從設定了過期時間的鍵中，移除最不經常使用的鍵。
+    # allkeys-lfu: 從所有鍵中，移除最不經常使用的鍵。
+    # volatile-random: 從設定了過期時間的鍵中，隨機移除鍵。
+    # allkeys-random: 從所有鍵中，隨機移除鍵。
+    # volatile-ttl: 從設定了過期時間的鍵中，移除最早過期的鍵。
+    # noeviction: 不移除任何鍵，當記憶體滿時，寫入操作會返回錯誤。
+    maxmemory-policy allkeys-lru 
+
+    # --- 安全性 ---
+    # 設定 Redis 連線密碼
+    # requirepass your_redis_password_here 
+    
+    # 重新命名敏感命令（例如 FLUSHALL)，增加安全性
+    # rename-command FLUSHALL "" # 完全禁用 FLUSHALL
+    # rename-command CONFIG "MYCONFIG" # 將 CONFIG 重新命名為 MYCONFIG
+
+    # --- 日誌 ---
+    # 日誌級別:debug, verbose, notice, warning
+    loglevel notice
+    # 日誌輸出檔案（相對或絕對路徑），如果為空字串則輸出到標準輸出
+    logfile ""
+
+    # --- 其他 ---
+    # 是否以守護進程模式運行，在 Docker/Kubernetes 中通常不啟用，讓容器前端進程運行
+    daemonize no
+    
+    # TCP Keepalive ，定期向客戶端發送 TCP ACK ，檢測死連線
+    tcp-keepalive 300
+
+    # 客戶端最大空閒時間（秒), 超過這個時間沒有操作的連線會被關閉, 0 表示永不超時
+    timeout 0
+
+    # 是否啟用 Redis 的 Keyspace Notifications, K: keyspace, E: keyevent, h: hash
+    # 這允許 Redis 發送事件通知到客戶端，例如鍵被修改、刪除等 (沒有鍵值)
+    # 設定哈希操作以更新限流器設定 
+    # notify-keyspace-events "Kh"
