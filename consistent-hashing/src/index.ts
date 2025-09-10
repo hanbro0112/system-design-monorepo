@@ -11,6 +11,20 @@ app.get('/', (req, res) => {
     res.status(200).send('Consistent-Hashing is running');
 });
 
+// 取得所有節點
+app.get('/consistent-hashing', (req, res) => {
+    res.status(200).json({ nodes: [] });
+});
+
+// 新增節點
+app.post('/consistent-hashing', (req, res) => {
+
+});
+
+// 刪除節點
+app.delete('/consistent-hashing/:node', (req, res) => {
+    
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

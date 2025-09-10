@@ -40,7 +40,6 @@ redis:
     just redis-port-forward
 
 
-
 redis-clear:
     kubectl delete all -l app=redis-standalone -n dev
     kubectl delete secret -l app=redis-standalone -n dev
