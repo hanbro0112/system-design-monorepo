@@ -4,6 +4,7 @@ metadata:
   name: simple-server
   labels:
     app: simple-server
+  namespace: dev
 spec:
   replicas: 1 
   selector:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: simple-server
-          image: simple-server:latest
+          image: hanbro0112/simple-server:latest
           ports:
-            - containerPort: 9000
+            - containerPort: 80
         

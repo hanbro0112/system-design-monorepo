@@ -47,3 +47,21 @@ redis-clear:
     
 
 
+start:
+    minikube start --driver=docker --ports=30000:30000
+    just simple-server
+
+simple-server:
+    kubectl create namespace dev
+    kubectl apply -f k8s/consistent-hashing/simple-server-deployment.yaml
+    kubectl apply -f k8s/consistent-hashing/simple-server-service.yaml
+
+clear:
+    kubectl delete all -l app=simple-server -n dev
+    kubectl delete namespace dev
+
+docker-push:
+    docker login
+    docker build -t hanbro0112/simple-server:latest k8s/consistent-hashing/simple-server
+    docker push hanbro0112/simple-server:latest
+    docker image prune
