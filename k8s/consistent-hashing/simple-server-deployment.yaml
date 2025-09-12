@@ -19,5 +19,5 @@ spec:
         - name: simple-server
           image: hanbro0112/simple-server:latest
           ports:
-            - containerPort: 80
+            - containerPort: 8080
         

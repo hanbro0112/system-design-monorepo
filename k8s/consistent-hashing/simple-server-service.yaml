@@ -8,9 +8,8 @@ metadata:
 spec:
   selector:
     app: simple-server # 匹配 Deployment 中的 labels
-  type: NodePort
+  type: ClusterIP
   ports:
     - protocol: TCP
-      port: 80 # Service 的端口
-      targetPort: 80 # Pod 中容器的端口
-      nodePort: 30001 # NodePort 的端口
+      port: 8080 # Service 的端口
+      targetPort: 8080 # Pod 中容器的端口

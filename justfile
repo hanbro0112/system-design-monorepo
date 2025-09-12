@@ -48,17 +48,29 @@ redis-clear:
 
 
 start:
-    minikube start --driver=docker --ports=30000:30000
-    just simple-server
+    minikube start --driver=docker
+    minikube addons enable ingress
+    kubectl create namespace dev
+
+    just forwarding
+
+stop:
+    kubectl delete all -l app=simple-server -n dev
+    kubectl delete all --all -n ingress-nginx
+    minikube stop
+
+forwarding:
+    kubectl apply -f k8s/ingress.yaml
+    minikube tunnel
+
 
 simple-server:
-    kubectl create namespace dev
+    sleep 5
     kubectl apply -f k8s/consistent-hashing/simple-server-deployment.yaml
     kubectl apply -f k8s/consistent-hashing/simple-server-service.yaml
 
 clear:
     kubectl delete all -l app=simple-server -n dev
-    kubectl delete namespace dev
 
 docker-push:
     docker login
