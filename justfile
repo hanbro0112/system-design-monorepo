@@ -53,6 +53,8 @@ start:
     kubectl create namespace dev
 
     just forwarding
+    just simple-server
+    minikube tunnel
 
 stop:
     kubectl delete all -l app=simple-server -n dev
@@ -60,12 +62,15 @@ stop:
     minikube stop
 
 forwarding:
+    #!/usr/bin/env sh
+    # wait for controller ready
+    while ! kubectl get pods -n ingress-nginx | grep ingress-nginx-controller | grep -q 1/1; do
+        sleep 2
+    done
     kubectl apply -f k8s/ingress.yaml
-    minikube tunnel
 
 
 simple-server:
-    sleep 5
     kubectl apply -f k8s/consistent-hashing/simple-server-deployment.yaml
     kubectl apply -f k8s/consistent-hashing/simple-server-service.yaml
 

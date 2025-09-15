@@ -5,7 +5,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
+// ingress-redirect prefix url = /simple-server
+app.get('/simple-server', (req, res) => {
     res.status(200).send('ok');
 });
 

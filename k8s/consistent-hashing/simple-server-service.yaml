@@ -11,5 +11,5 @@ spec:
   type: ClusterIP
   ports:
     - protocol: TCP
-      port: 8080 # Service 的端口
-      targetPort: 8080 # Pod 中容器的端口
+      port: 80 # Service 的端口
+      targetPort: 80 # Pod 中容器的端口
