@@ -51,15 +51,15 @@ start:
     minikube start --driver=docker
     minikube addons enable ingress
     kubectl create namespace dev
+    # 設定 權限
+    kubectl apply -f k8s/rbac.yaml
 
+    just consistent-hashing
     just forwarding
-    just simple-server
     minikube tunnel
 
 stop:
-    kubectl delete all -l app=simple-server -n dev
-    kubectl delete all --all -n ingress-nginx
-    minikube stop
+    minikube delete
 
 forwarding:
     #!/usr/bin/env sh
@@ -70,15 +70,24 @@ forwarding:
     kubectl apply -f k8s/ingress.yaml
 
 
-simple-server:
-    kubectl apply -f k8s/consistent-hashing/simple-server-deployment.yaml
-    kubectl apply -f k8s/consistent-hashing/simple-server-service.yaml
+consistent-hashing:
+    kubectl apply -f k8s/consistent-hashing/consistent-hashing-deployment.yaml
+    kubectl apply -f k8s/consistent-hashing/consistent-hashing-service.yaml
+
 
 clear:
     kubectl delete all -l app=simple-server -n dev
 
 docker-push:
     docker login
-    docker build -t hanbro0112/simple-server:latest k8s/consistent-hashing/simple-server
-    docker push hanbro0112/simple-server:latest
-    docker image prune
+    docker build -t hanbro0112/consistent-hashing:latest consistent-hashing
+    docker push hanbro0112/consistent-hashing:latest
+    # docker build -t hanbro0112/simple-server:latest k8s/consistent-hashing/simple-server
+    # docker push hanbro0112/simple-server:latest
+    docker image prune -f
+
+update:
+    just docker-push
+    kubectl set image deployment/consistent-hashing consistent-hashing=hanbro0112/consistent-hashing:latest -n dev
+    kubectl rollout restart deployment consistent-hashing -n dev
+    

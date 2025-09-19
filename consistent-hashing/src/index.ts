@@ -1,32 +1,77 @@
 import express from 'express';
 import cors from 'cors';
+import { getServer, addServer, removeServer, sendRequestToServer } from './scripts';
+import { ConsistentHashing } from './algo/consistentHash';
 
+const consistentHashing = new ConsistentHashing();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-app.get('/', (req, res) => {
-    res.status(200).send('Consistent-Hashing is running');
+app.get('/consistent-hashing/request/:key', async (req, res) => {
+    const { key } = req.params;
+    const point = consistentHashing.findMatchPoint(key);
+    if (!point) return res.status(500).json({ message: 'No available node' });
+    const success = await sendRequestToServer(point.getIp());
+    if (success) {
+        res.status(200).json({ message: 'ok', node: point.getIp() });
+    } else {
+        // 檢查本地狀態
+        getServer();
+        res.status(500).json({ message: `Request to node ${point.getIp()} failed` });
+    }
 });
 
 // 取得所有節點
-app.get('/consistent-hashing', (req, res) => {
-    res.status(200).json({ nodes: [] });
+app.get('/consistent-hashing', async (req, res) => {
+    const servers = await getServer();
+    // 檢查刪除
+    for (let point of consistentHashing.pointList.slice()) {
+        if (!servers.includes(point.getIp())) {
+            consistentHashing.removePoint(point.getIp());
+        }
+    }
+    // 檢查新增
+    for (let uuid of servers) {
+        if (!consistentHashing.pointIndex[uuid]) {
+            consistentHashing.addPoint(uuid, 100);
+        }
+    }
+
+    const data = [];
+    for (let point of consistentHashing.pointList) {
+        data.push({ node: point.getIp(), virtualPoints: point.getVirtualPoints() });
+    }
+    res.status(200).json({ nodes: data, servers });
 });
 
 // 新增節點
-app.post('/consistent-hashing', (req, res) => {
-
+app.post(`/consistent-hashing`, async (req, res) => {
+    const { virtualPointsNumber } = req.body;
+    const uuid = await addServer();
+    if (uuid) {
+        consistentHashing.addPoint(uuid, virtualPointsNumber);
+        res.status(200).json({ message: 'Node added successfully' });
+    } else {
+        res.status(500).json({ message: 'Failed to add node' });
+    }
 });
 
 // 刪除節點
-app.delete('/consistent-hashing/:node', (req, res) => {
-    
+app.delete('/consistent-hashing/:node', async (req, res) => {
+    const { node } = req.params;
+    const success = await removeServer(node);
+    if (success) {
+        // 更新本地狀態
+        await getServer();
+        res.status(200).json({ message: `Node ${node} removed successfully` });
+    } else {
+        res.status(500).json({ message: `Failed to remove node ${node}`});
+    }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
     console.log(`Consistent-Hashing Server is running on http://localhost:${PORT}`);
 });
