@@ -1,5 +1,4 @@
-# windows
-# set shell := ["powershell.exe", "-c"]
+# 只支援 linux base shell (windows 可以用 git bash)
 
 alias l := local
 alias ld := local-down
