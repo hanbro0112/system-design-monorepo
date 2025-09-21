@@ -43,7 +43,7 @@ app.get('/consistent-hashing', async (req, res) => {
     for (let point of consistentHashing.pointList) {
         data.push({ node: point.getIp(), virtualPoints: point.getVirtualPoints() });
     }
-    res.status(200).json({ nodes: data, servers });
+    res.status(200).json({ nodes: data });
 });
 
 // 新增節點

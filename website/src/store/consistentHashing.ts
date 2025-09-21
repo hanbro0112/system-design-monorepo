@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-
-import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typeModel';
+import { getNodeList } from '../api/ConsistentHashingService';
 
 import toast from 'react-hot-toast';
 
+import { nodeList } from '../pages/consistent-hashing/type';
 
-const rateLimitSlice = createSlice({
+const consistentHashingSlice = createSlice({
     name: 'consistentHashing',
     initialState: {
-        emulatorList: [],
+        nodeList: [] as nodeList,
     },
     reducers: {
         
@@ -16,7 +16,7 @@ const rateLimitSlice = createSlice({
     // 使用 extraReducers 來處理 createAsyncThunk 生成的 action
     extraReducers: (builder) => {
         builder.addCase(fetchData.fulfilled, (state, action) => {
-            state.emulatorList = action.payload || [];
+            state.nodeList = action.payload || [];
         })
     }
 })
@@ -24,16 +24,12 @@ const rateLimitSlice = createSlice({
 export const fetchData = createAsyncThunk(
     'consistentHashing/fetchData',
     async () => {
-        const list = await getEmulatorList();
-        const new_list = Object.keys(list).map(key => ({
-            key,
-            ...list[key]
-        }));
-        new_list.sort((a, b) => - (a.createTime - b.createTime));
-        return new_list;
+        const list = await getNodeList();
+        list.sort((a, b) => - (a.node < b.node));
+        return list;
     }
 );
 
 // export const {  } = rateLimitSlice.actions;
 
-export default rateLimitSlice.reducer;
+export default consistentHashingSlice.reducer;
