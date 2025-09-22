@@ -60,7 +60,7 @@ spec:
       targetPort: 80 # Pod 中容器的端口
 `;
 
-    const { stdout, stderr } = await execPromise(`kubectl apply -f - <<< "${deployTemplate}" | kubectl apply -f - <<< "${serviceTemplate}"`);
+    const { stdout, stderr } = await execPromise(`echo "${deployTemplate}" | kubectl apply -f - && echo "${serviceTemplate}" | kubectl apply -f -`);
     if (stderr) {
         console.error(`Error adding server: ${stderr}`);
         return '';

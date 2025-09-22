@@ -17,7 +17,7 @@ export class ConsistentHashing {
      * @param ip 
      * @param virtualPointsNumber
      */
-    addPoint(ip: string, virtualPointsNumber: number) {
+    addPoint(ip: string, virtualPointsNumber: number): Point['virtualPoints'] {
         const point = new Point(ip, virtualPointsNumber);
         this.pointList.push(point);
         this.pointIndex[ip] = this.pointList.length - 1;
@@ -25,6 +25,7 @@ export class ConsistentHashing {
             this.hashRing.push({ key: virtualPoints, value: point });
         }
         this.hashRing.sort((a, b) => a.key - b.key);
+        return point.getVirtualPoints();
     }
 
     /**

@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { getNodeList } from '../api/ConsistentHashingService';
-
-import toast from 'react-hot-toast';
+import { getNodeList, addNewNode } from '../api/ConsistentHashingService';
 
 import { nodeList } from '../pages/consistent-hashing/type';
+
+import toast from 'react-hot-toast';
 
 const consistentHashingSlice = createSlice({
     name: 'consistentHashing',
@@ -27,6 +27,21 @@ export const fetchData = createAsyncThunk(
         const list = await getNodeList();
         list.sort((a, b) => - (a.node < b.node));
         return list;
+    }
+);
+
+export const addNode = createAsyncThunk(
+    'consistentHashing/addNode',
+    async (virtualPointsNumber: number) => {
+        const toastId = toast.loading('Adding node...');
+        try {
+            const data = await addNewNode(virtualPointsNumber);
+            toast.success(`Node ${data.id} added`, { id: toastId });
+            return data;
+        } catch (error) {
+            toast.error('Failed to add node', { id: toastId });
+            throw new Error('Failed to add node');
+        }
     }
 );
 
