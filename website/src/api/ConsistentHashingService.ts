@@ -15,7 +15,7 @@ export async function getNodeList(): Promise<nodeList> {
     return responseData.nodes;
 }
 
-export async function addNewNode(virtualPointsNumber: number): Promise<{id: string, virtualPoints: number[]}> {
+export async function addNode(virtualPointsNumber: number): Promise<{id: string, virtualPoints: number[]}> {
     const url = `${process.env.NEXT_PUBLIC_CONSISTENT_HASHING_URL}`;
     const response = await fetch(url, {
         method: 'POST',
@@ -29,4 +29,15 @@ export async function addNewNode(virtualPointsNumber: number): Promise<{id: stri
     }
     const responseData = await response.json() as { message: string, data: {id: string, virtualPoints: number[] }};
     return responseData.data;
+}
+
+export async function removeNode(nodeId: string): Promise<boolean> {
+    const url = `${process.env.NEXT_PUBLIC_CONSISTENT_HASHING_URL}/${nodeId}`;
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.ok;
 }

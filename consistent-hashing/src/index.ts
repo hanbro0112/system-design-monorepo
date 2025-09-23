@@ -47,14 +47,14 @@ app.get('/consistent-hashing/request/:key', async (req, res) => {
 
 // 取得所有節點
 app.get('/consistent-hashing', async (req, res) => {
-    const data = getAndUpdateServer();
+    const data = await getAndUpdateServer();
     res.status(200).json({ nodes: data });
 });
 
 // 新增節點
 app.post(`/consistent-hashing`, async (req, res) => {
     const { virtualPointsNumber } = req.body;
-    const id = await addServer();
+    const id = await addServer(virtualPointsNumber);
     if (id) {
         const virtualPoints = consistentHashing.addPoint(id, virtualPointsNumber);
         res.status(200).json({ 

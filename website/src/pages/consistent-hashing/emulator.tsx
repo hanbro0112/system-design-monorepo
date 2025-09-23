@@ -2,21 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button, Card, Row, Col, Form } from "react-bootstrap"; 
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchData, addNode } from '@/store/consistentHashing';
+import { fetchData, addNode, removeNode } from '@/store/consistentHashing';
 
-import { nodeList } from './type';
-
-// 節點類型定義
-interface Node {
-    id: string;
-    color: string;
-    points: {
-        value: number; // 0 to 2^32 - 1
-        angle: number; // 角度 (0-360)
-        x: number;
-        y: number;
-    }[];
-}
+import { nodeList, point } from './type';
 
 // 大圓的樣式
 const largeCircleStyle: React.CSSProperties = {
@@ -45,55 +33,28 @@ const middleCircleStyle: React.CSSProperties = {
 // 小圓點的樣式
 const smallCircleStyle: React.CSSProperties = {
     position: 'absolute',
-    width: '10px',
-    height: '10px',
+    width: '5px',
+    height: '5px',
     borderRadius: '50%',
     backgroundColor: '#FF5722',
     cursor: 'pointer',
 };
 
-// 圓環的半徑和中心
-const centerX = 200;
-const centerY = 200;
-const ringRadius = 200;
-
 export default function Emulator() {
     const dispatch = useDispatch<any>();
     const nodeList = useSelector((state: any) => state.consistentHashing.nodeList) as nodeList;
-    const [nodes, setNodes] = useState([] as Node[]);
-    const [virtualPointsNumber, setVirtualPointsNumber] = useState<number>(100);
+    const [virtualPointsNumber, setVirtualPointsNumber] = useState<number>(20);
 
-    const refreshData = () => {
-        dispatch(fetchData());
-
-        const new_nodes = [] as Node[];
-        nodeList.forEach(item => {
-            const { node, virtualPoints } = item;
-            const data = {
-                id: node,
-                color: idToColor(node),
-                points: virtualPoints.map(vp => {
-                    // vp 為 hash value，轉成角度與圓上的座標
-                    const angle = valueToAngle(vp);
-                    const pos = angleToPosition(angle);
-                    return {
-                        value: vp,
-                        angle,
-                        x: pos.x,
-                        y: pos.y
-                    };
-                })
-            } as Node;
-            new_nodes.push(data);
-        })
-    }
     useEffect(() => {
-        refreshData();
+        dispatch(fetchData());
     }, [dispatch]);
 
     const handleAddNode = () => {
         dispatch(addNode(virtualPointsNumber));
-        refreshData();
+    }
+
+    const handleRemoveNode = (nodeId: string) => {
+        dispatch(removeNode(nodeId));
     }
 
     return (
@@ -103,12 +64,13 @@ export default function Emulator() {
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <div style={largeCircleStyle}>
                             <div style={middleCircleStyle} />
-                            {nodes.map(node =>
-                                node.points.map((point: Node['points'][number]) => (
+                            {nodeList.map(item =>
+                                item.circlePoints.map((point: point) => (
                                     <div
                                         key={point.value}
                                         style={{
                                             ...smallCircleStyle,
+                                            backgroundColor: item.color,
                                             left: `${point.x}px`,
                                             top: `${point.y}px`,
                                             transform: 'translate(-50%, -50%)',
@@ -131,7 +93,7 @@ export default function Emulator() {
                                     <Form.Control
                                         type="number"
                                         min={1}
-                                        max={10000}
+                                        max={1000}
                                         value={virtualPointsNumber}
                                         onChange={e => setVirtualPointsNumber(Number(e.target.value))}
                                     />
@@ -148,26 +110,20 @@ export default function Emulator() {
                             <div className="mb-3">
                                 <label className="form-label">節點資訊</label>
                                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                    {nodes.length === 0 ? (
+                                    {nodeList.length === 0 ? (
                                         <p className="text-muted">尚無節點</p>
                                     ) : (
-                                        nodes.map((node, index) => (
-                                            <div key={node.id} className="border p-2 mb-1 rounded">
+                                        nodeList.map(item => (
+                                            <div key={item.node} className="border p-2 mb-1 rounded" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                 <small>
-                                                    <strong>節點 {index + 1}:</strong><br/>
-                                                    ID: {node.id}<br/>
-                                                    值: {node.value.toLocaleString()}<br/>
-                                                    角度: {node.angle.toFixed(1)}°<br/>
-                                                    位置: ({Math.round(node.x)}, {Math.round(node.y)})
+                                                    <strong style={{ color: item.color }}>
+                                                        {item.node} | {item.virtualPoints.length }
+                                                    </strong>
                                                 </small>
                                                 <Button 
                                                     size="sm" 
-                                                    variant="outline-danger" 
-                                                    className="float-end"
-                                                    onClick={() => {
-                                                        const newNodes = nodes.filter((_, i) => i !== index);
-                                                        setNodes(newNodes);
-                                                    }}
+                                                    variant="outline-danger"
+                                                    onClick={() => handleRemoveNode(item.node)}
                                                 >
                                                     刪除
                                                 </Button>
@@ -184,29 +140,3 @@ export default function Emulator() {
         </div>
     );
 };
-
-
-// 將哈希值轉換為角度 (0-360度)
-const valueToAngle = (value: number): number => {
-    return (value / Math.pow(2, 32)) * 360;
-};
-
-// 將角度轉換為圓環上的坐標
-const angleToPosition = (angle: number) => {
-    const radian = (angle - 90) * Math.PI / 180; // -90度使0度指向頂部
-    return {
-        x: centerX + ringRadius * Math.cos(radian),
-        y: centerY + ringRadius * Math.sin(radian)
-    };
-};
-
-// 根據 id 產生固定顏色（hash to color）
-function idToColor(id: string): string {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-        hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    // 產生 0~359 的色相
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 70%, 55%)`;
-}

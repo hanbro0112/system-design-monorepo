@@ -3,8 +3,13 @@ import { promisify } from 'util';
 
 const execPromise = promisify(exec);
 
+type serverInfo = {
+    name: string;
+    virtualPointsNumber: number;
+};
+
 export async function getServer(): Promise<string[]> {
-    const command = "kubectl get deployment -n dev | grep simple-server | awk '{print $1}'";
+    const command = "kubectl get deployment -n dev | grep simple-server | awk '{print $1}' | sed 's/simple-server-//'";
     const { stdout, stderr } = await execPromise(command);
     if (stderr) {
         console.error(`Error fetching server list: ${stderr}`);
@@ -14,7 +19,7 @@ export async function getServer(): Promise<string[]> {
 }
 
 
-export async function addServer(): Promise<string> {
+export async function addServer(virtualPointsNumber: number): Promise<string> {
     // 生成 template 
     const uuid = crypto.randomUUID().slice(0, 8); 
     const deployTemplate = `
@@ -24,6 +29,7 @@ metadata:
   name: simple-server-${uuid}
   labels:
     app: simple-server-${uuid}
+    virtualPointsNumber: '${virtualPointsNumber}'
   namespace: dev
 spec:
   replicas: 1 

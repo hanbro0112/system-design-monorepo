@@ -4,6 +4,7 @@ metadata:
   name: consistent-hashing
   labels:
     app: consistent-hashing
+    virtualPointsNumber: "20"
   namespace: dev
 spec:
   replicas: 1 
