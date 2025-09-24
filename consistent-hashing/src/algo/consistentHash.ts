@@ -18,6 +18,10 @@ export class ConsistentHashing {
      * @param virtualPointsNumber
      */
     addPoint(ip: string, virtualPointsNumber: number): Point['virtualPoints'] {
+        // 重複新增
+        if (this.pointIndex[ip]) {
+            return this.pointList[this.pointIndex[ip]].getVirtualPoints();
+        }
         const point = new Point(ip, virtualPointsNumber);
         this.pointList.push(point);
         this.pointIndex[ip] = this.pointList.length - 1;

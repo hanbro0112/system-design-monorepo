@@ -1,33 +1,26 @@
 import express from 'express';
 import cors from 'cors';
-import { getServer, addServer, removeServer, sendRequestToServer } from './scripts';
+import { getServerInfo, addServer, removeServer, sendRequestToServer } from './scripts';
 import { ConsistentHashing } from './algo/consistentHash';
 
-const consistentHashing = new ConsistentHashing();
+let consistentHashing = new ConsistentHashing();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const getAndUpdateServer = async () => {
-    const servers = await getServer(); // 取得目前所有節點
-    // 檢查刪除
-    for (let point of consistentHashing.pointList.slice()) {
-        if (!servers.includes(point.getIp())) {
-            consistentHashing.removePoint(point.getIp());
-        }
+    const serversInfo = await getServerInfo(); // 取得目前所有節點
+    const newConsistentHashing = new ConsistentHashing();
+    for (let server of serversInfo) {
+        newConsistentHashing.addPoint(server.name, server.virtualPointsNumber);
     }
-    // 檢查新增
-    for (let uuid of servers) {
-        if (!consistentHashing.pointIndex[uuid]) {
-            consistentHashing.addPoint(uuid, 100);
-        }
-    }
-
+    // 回傳目前節點資料
     const data = [];
-    for (let point of consistentHashing.pointList) {
-        data.push({ node: point.getIp(), virtualPoints: point.getVirtualPoints() });
+    for (let point of newConsistentHashing.pointList) {
+        data.push({ id: point.getIp(), virtualPoints: point.getVirtualPoints() });
     }
+    consistentHashing = newConsistentHashing;
     return data;
 }
 
@@ -37,10 +30,10 @@ app.get('/consistent-hashing/request/:key', async (req, res) => {
     if (!point) return res.status(500).json({ message: 'No available node' });
     const success = await sendRequestToServer(point.getIp());
     if (success) {
-        res.status(200).json({ message: 'ok', node: point.getIp() });
+        res.status(200).json({ message: 'ok', id: point.getIp() });
     } else {
         // 檢查本地狀態
-        getAndUpdateServer();
+        await getAndUpdateServer();
         res.status(500).json({ message: `Request to node ${point.getIp()} failed` });
     }
 });
@@ -70,15 +63,15 @@ app.post(`/consistent-hashing`, async (req, res) => {
 });
 
 // 刪除節點
-app.delete('/consistent-hashing/:node', async (req, res) => {
-    const { node } = req.params;
-    const success = await removeServer(node);
+app.delete('/consistent-hashing/:id', async (req, res) => {
+    const { id } = req.params;
+    const success = await removeServer(id);
     if (success) {
         // 更新本地狀態
         await getAndUpdateServer();
-        res.status(200).json({ message: `Node ${node} removed successfully` });
+        res.status(200).json({ message: `Node ${id} removed successfully` });
     } else {
-        res.status(500).json({ message: `Failed to remove node ${node}`});
+        res.status(500).json({ message: `Failed to remove node ${id}`});
     }
 });
 

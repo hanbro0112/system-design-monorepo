@@ -8,14 +8,23 @@ type serverInfo = {
     virtualPointsNumber: number;
 };
 
-export async function getServer(): Promise<string[]> {
-    const command = "kubectl get deployment -n dev | grep simple-server | awk '{print $1}' | sed 's/simple-server-//'";
+export async function getServerInfo(): Promise<serverInfo[]> {
+    // grep 沒取到值會回傳 1 error code 所以加上 || true
+    const command = "kubectl get deployment -n dev --show-labels | grep simple-server | grep 1/1 || true";
     const { stdout, stderr } = await execPromise(command);
     if (stderr) {
         console.error(`Error fetching server list: ${stderr}`);
         return [];
     }
-    return stdout.split('\n').filter(str => str !== '');
+    if (stdout === '') return [];
+    const res: serverInfo[] = [];
+    const data = stdout.split('\n').filter(str => str !== '');
+    for (let line of data) {
+        const id = line.match(/simple-server-(\w+)/)![1];
+        const virtualPointsNumber = line.match(/virtualPointsNumber=(\d+)/)![1];
+        res.push({ name: id, virtualPointsNumber: Number(virtualPointsNumber) });
+    }
+    return res;
 }
 
 
@@ -75,8 +84,8 @@ spec:
     return uuid;
 }
 
-export async function removeServer(uuid: string): Promise<boolean> {
-    const { stdout, stderr } = await execPromise(`kubectl delete deployment simple-server-${uuid} -n dev && kubectl delete service simple-server-${uuid} -n dev`);
+export async function removeServer(id: string): Promise<boolean> {
+    const { stdout, stderr } = await execPromise(`kubectl delete deployment simple-server-${id} -n dev && kubectl delete service simple-server-${id} -n dev`);
     if (stderr) {
         console.error(`Error removing server: ${stderr}`);
         return false;
@@ -85,8 +94,8 @@ export async function removeServer(uuid: string): Promise<boolean> {
     return true;
 }
 
-export async function sendRequestToServer(uuid: string): Promise<boolean> {
-    const { stdout, stderr } = await execPromise(`curl -s http://simple-server-${uuid}`);
+export async function sendRequestToServer(id: string): Promise<boolean> {
+    const { stdout, stderr } = await execPromise(`curl -s http://simple-server-${id}`);
     if (stderr) {
         console.error(`Error sending request to server: ${stderr}`);
         return false;

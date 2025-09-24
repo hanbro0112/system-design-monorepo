@@ -1,6 +1,6 @@
 // 原始節點列表
 export type nodeList = { 
-    node: string; 
+    id: string; 
     color: string;
     virtualPoints: number[]; 
     circlePoints: point[];

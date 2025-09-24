@@ -6,6 +6,10 @@ import { fetchData, addNode, removeNode } from '@/store/consistentHashing';
 
 import { nodeList, point } from './type';
 
+import { sendRequestToNode } from '@/api/ConsistentHashingService';
+import toast from 'react-hot-toast';
+const fixedKey = new Array(100).fill(0).map((_, index) => `key-${index}`);
+
 // 大圓的樣式
 const largeCircleStyle: React.CSSProperties = {
     position: 'relative',
@@ -44,6 +48,7 @@ export default function Emulator() {
     const dispatch = useDispatch<any>();
     const nodeList = useSelector((state: any) => state.consistentHashing.nodeList) as nodeList;
     const [virtualPointsNumber, setVirtualPointsNumber] = useState<number>(20);
+    const [testResult, setTestResult] = useState<{ [key: string]: number }>({});
 
     useEffect(() => {
         dispatch(fetchData());
@@ -55,6 +60,22 @@ export default function Emulator() {
 
     const handleRemoveNode = (nodeId: string) => {
         dispatch(removeNode(nodeId));
+    }
+
+    const handleTestingNode = async () => {
+        const toastId = toast.loading('Testing nodes...');
+        const testResult: { [key: string]: number } = {};
+        for (let i = 0; i < fixedKey.length; i += 20) {
+            const batch = fixedKey.slice(i, i + 20);
+            const responses = await Promise.all(batch.map(key => sendRequestToNode(key)));
+            for (let nodeId of responses) {
+                if (nodeId === '') throw new Error('Failed to send request');
+                testResult[nodeId] = (testResult[nodeId] || 0) + 1;
+            }
+            setTestResult({...testResult});
+        }
+        toast.success('Testing completed', { id: toastId });
+        
     }
 
     return (
@@ -105,6 +126,28 @@ export default function Emulator() {
                                 >
                                     添加節點
                                 </Button>
+                                
+                                <Button 
+                                    variant="outline-info"
+                                    onClick={handleTestingNode}
+                                    className="w-100"
+                                    style={{ fontWeight: 400, letterSpacing: 2, fontSize: 16, borderWidth: 2, paddingLeft: 18 }}
+                                >
+                                    <i className="fa fa-bolt" style={{
+                                        marginRight: 8,
+                                        color: 'inherit',
+                                        fontSize: 20,
+                                        transition: 'color 0.2s'
+                                    }} />
+                                    <span style={{ color: 'inherit' }}>測試節點</span>
+                                </Button>
+                                <style jsx>{`
+                                    .btn-outline-info:active .fa-bolt,
+                                    .btn-outline-info:focus .fa-bolt,
+                                    .btn-outline-info:hover .fa-bolt {
+                                        color: #fff !important;
+                                    }
+                                `}</style>
                             </div>
                             <hr />
                             <div className="mb-3">
@@ -114,19 +157,26 @@ export default function Emulator() {
                                         <p className="text-muted">尚無節點</p>
                                     ) : (
                                         nodeList.map(item => (
-                                            <div key={item.node} className="border p-2 mb-1 rounded" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div key={item.id} className="border p-2 mb-1 rounded" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                 <small>
                                                     <strong style={{ color: item.color }}>
-                                                        {item.node} | {item.virtualPoints.length }
+                                                        {item.id} | {item.virtualPoints.length}
                                                     </strong>
                                                 </small>
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="outline-danger"
-                                                    onClick={() => handleRemoveNode(item.node)}
-                                                >
-                                                    刪除
-                                                </Button>
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    {typeof testResult[item.id] === 'number' && (
+                                                        <span style={{ marginRight: 16, color: '#17a2b8', fontWeight: 500 }}>
+                                                            {testResult[item.id]} / 100
+                                                        </span>
+                                                    )}
+                                                    <Button 
+                                                        size="sm" 
+                                                        variant="outline-danger"
+                                                        onClick={() => handleRemoveNode(item.id)}
+                                                    >
+                                                        刪除
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))
                                     )}

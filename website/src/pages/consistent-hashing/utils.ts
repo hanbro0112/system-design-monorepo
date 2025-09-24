@@ -1,7 +1,7 @@
 // 圓環的半徑和中心
 const centerX = 200;
 const centerY = 200;
-const ringRadius = 200;
+const ringRadius = 197.5;
 
 // 將哈希值轉換為角度 (0-360度)
 export const valueToAngle = (value: number): number => {

@@ -18,8 +18,8 @@ const consistentHashingSlice = createSlice({
     extraReducers: (builder) => {
         builder.addCase(fetchData.fulfilled, (state, action) => {
             state.nodeList = action.payload.map(item => ({ 
-                node: item.node,
-                color: Utils.idToColor(item.node),
+                id: item.id,
+                color: Utils.idToColor(item.id),
                 virtualPoints: item.virtualPoints,
                 circlePoints: item.virtualPoints.map(value => ({
                     value,
@@ -30,7 +30,7 @@ const consistentHashingSlice = createSlice({
         }),
         builder.addCase(addNode.fulfilled, (state, action) => {
             state.nodeList.push({
-                node: action.payload.id,
+                id: action.payload.id,
                 color: Utils.idToColor(action.payload.id),
                 virtualPoints: action.payload.virtualPoints,
                 circlePoints: action.payload.virtualPoints.map(value => ({
@@ -39,12 +39,12 @@ const consistentHashingSlice = createSlice({
                     ...Utils.angleToPosition(Utils.valueToAngle(value))
                 }))
             });
-            state.nodeList.sort((a, b) => - (a.node < b.node));
+            state.nodeList.sort((a, b) => - (a.id < b.id));
             
         }),
         builder.addCase(removeNode.fulfilled, (state, action) => {
             const removeId = action.payload as string;
-            state.nodeList = state.nodeList.filter(item => item.node !== removeId);
+            state.nodeList = state.nodeList.filter(item => item.id !== removeId);
         });
     }
 })
@@ -53,7 +53,7 @@ export const fetchData = createAsyncThunk(
     'consistentHashing/fetchData',
     async () => {
         const list = await getNodeList();
-        list.sort((a, b) => - (a.node < b.node));
+        list.sort((a, b) => - (a.id < b.id));
         return list;
     }
 );
@@ -82,11 +82,11 @@ export const removeNode = createAsyncThunk(
             if (success) {
                 toast.success(`Node ${nodeId} removed`, { id: toastId });
             } else {
-                toast.error(`Failed to remove node ${nodeId}`, { id: toastId });
+                toast.error(`Failed to remove node ${nodeId} ${success}`, { id: toastId });
             }
             return nodeId;
         } catch (error) {
-            toast.error(`Failed to remove node ${nodeId}`, { id: toastId });
+            toast.error(`Failed to remove node ${nodeId} ${error}`, { id: toastId });
             throw new Error('Failed to remove node');
         }
     }
