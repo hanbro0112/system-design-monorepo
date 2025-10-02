@@ -68,14 +68,14 @@ function Tester({ testerKey }: { testerKey: string }) {
                 borderWidth: 1.5,
                 radius: 0
             },
-            {
-                label: 'FailedRequest',
-                data: data.map(item => item.FailRequest),
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 1.0)',
-                borderWidth: 1.5,
-                radius: 0
-            },
+            // {
+            //     label: 'FailedRequest',
+            //     data: data.map(item => item.FailRequest),
+            //     borderColor: 'rgba(255, 99, 132, 1)',
+            //     backgroundColor: 'rgba(255, 99, 132, 1.0)',
+            //     borderWidth: 1.5,
+            //     radius: 0
+            // },
         ],
     };
     

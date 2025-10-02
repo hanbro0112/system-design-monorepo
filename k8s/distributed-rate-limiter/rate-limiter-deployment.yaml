@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rate-limiter
+  labels:
+    app: rate-limiter
+  namespace: dev
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: rate-limiter
+  template:
+    metadata:
+      labels:
+        app: rate-limiter
+    spec:
+      containers:
+        - name: rate-limiter
+          image: hanbro0112/rate-limiter:latest
+          ports:
+            - containerPort: 80
+        
