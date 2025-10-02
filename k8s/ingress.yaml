@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: dev
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+      # - path: /redis
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: redis-standalone
+      #       port:
+      #         number: 6379
+      - path: /consistent-hashing
+        pathType: Prefix
+        backend:
+          service:
+            name: consistent-hashing
+            port:
+              number: 80

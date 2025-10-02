@@ -9,5 +9,10 @@
       "javascriptreact",
       "typescript",
       "typescriptreact",
-    ]
+    ],
+    
+    "files.associations": {
+      "justfile": "plaintext", // justfile 默認會被識別為 dockerFile
+      "justfile.windows": "plaintext"
+    }
 }

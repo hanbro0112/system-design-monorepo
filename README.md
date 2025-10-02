@@ -1,11 +1,10 @@
-# distributed-rate-limiter
-System design practice
+# System design practice
 
 https://github.com/casey/just
 
 frontend framework: https://codedthemes.com/item/datta-able-react-free-admin-template
 
-distributed-rate-limiter:
+# distributed-rate-limiter
 - 實作:
  1. 限流服務
  2. api 層掛載模組
@@ -29,3 +28,15 @@ distributed-rate-limiter:
  3. 重置/清除 
 
 - 動態更改限流設定: 節點定期更新, 發佈訂閱更新 (redis pubsub)
+
+# consistent-hashing
+- 實作:
+  1. 服務擴容, 縮容 (k8s)
+
+- 演算法:
+  1. 哈希環
+  2. 虛擬節點
+  
+- 操作:
+  1. 增加 / 刪除節點
+  2. 使用者請求

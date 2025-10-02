@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import rateLimitReducer from './rateLimit'
+import consistentHashingReducer from './consistentHashing'
 
 const store = configureStore({
     reducer: {
-        rateLimit: rateLimitReducer
+        rateLimit: rateLimitReducer,
+        consistentHashing: consistentHashingReducer
     }
 })
 
