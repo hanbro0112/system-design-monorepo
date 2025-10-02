@@ -51,7 +51,7 @@ export async function sendRequestToNode(key: string): Promise<string> {
         },
     });
     if (!response.ok) {
-        throw new Error('Failed to send request');
+        return '';
     }
     const data = await response.json() as { message: string; id: string };
     return data.id

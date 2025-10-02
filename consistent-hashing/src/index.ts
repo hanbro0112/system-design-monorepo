@@ -4,12 +4,14 @@ import { getServerInfo, addServer, removeServer, sendRequestToServer } from './s
 import { ConsistentHashing } from './algo/consistentHash';
 
 let consistentHashing = new ConsistentHashing();
+let serverData: Array<{ id: string; virtualPoints: number[] }> = [];
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+// 新增一個每五秒執行的 job
+setInterval(async () => {
+    serverData = await updateServerData();
+}, 5000);
 
-const getAndUpdateServer = async () => {
+const updateServerData = async () => {
     const serversInfo = await getServerInfo(); // 取得目前所有節點
     const newConsistentHashing = new ConsistentHashing();
     for (let server of serversInfo) {
@@ -24,6 +26,10 @@ const getAndUpdateServer = async () => {
     return data;
 }
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 app.get('/consistent-hashing/request/:key', async (req, res) => {
     const { key } = req.params;
     const point = consistentHashing.findMatchPoint(key);
@@ -32,16 +38,13 @@ app.get('/consistent-hashing/request/:key', async (req, res) => {
     if (success) {
         res.status(200).json({ message: 'ok', id: point.getIp() });
     } else {
-        // 檢查本地狀態
-        await getAndUpdateServer();
         res.status(500).json({ message: `Request to node ${point.getIp()} failed` });
     }
 });
 
 // 取得所有節點
 app.get('/consistent-hashing', async (req, res) => {
-    const data = await getAndUpdateServer();
-    res.status(200).json({ nodes: data });
+    res.status(200).json({ nodes: serverData });
 });
 
 // 新增節點
@@ -49,7 +52,9 @@ app.post(`/consistent-hashing`, async (req, res) => {
     const { virtualPointsNumber } = req.body;
     const id = await addServer(virtualPointsNumber);
     if (id) {
-        const virtualPoints = consistentHashing.addPoint(id, virtualPointsNumber);
+        const virtualPoints = consistentHashing.addPoint(id, virtualPointsNumber).slice();
+        consistentHashing.removePoint(id); // 先移除本地節點，等下次 updateServerData 時會重新加入
+
         res.status(200).json({ 
             message: 'Node added successfully', 
             data: {
@@ -68,7 +73,7 @@ app.delete('/consistent-hashing/:id', async (req, res) => {
     const success = await removeServer(id);
     if (success) {
         // 更新本地狀態
-        await getAndUpdateServer();
+        serverData = await updateServerData();
         res.status(200).json({ message: `Node ${id} removed successfully` });
     } else {
         res.status(500).json({ message: `Failed to remove node ${id}`});

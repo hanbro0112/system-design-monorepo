@@ -9,8 +9,12 @@ type serverInfo = {
 };
 
 export async function getServerInfo(): Promise<serverInfo[]> {
+    /**
+     * READY   UP-TO-DATE   AVAILABLE
+     * 1/1     *            1
+     */
     // grep 沒取到值會回傳 1 error code 所以加上 || true
-    const command = "kubectl get deployment -n dev --show-labels | grep simple-server | grep 1/1 || true";
+    const command = "kubectl get deployment -n dev --show-labels | grep simple-server | grep -E '1/1[[:space:]]+[0-9]+[[:space:]]+1' || true";
     const { stdout, stderr } = await execPromise(command);
     if (stderr) {
         console.error(`Error fetching server list: ${stderr}`);

@@ -69,13 +69,15 @@ export default function Emulator() {
             const batch = fixedKey.slice(i, i + 20);
             const responses = await Promise.all(batch.map(key => sendRequestToNode(key)));
             for (let nodeId of responses) {
-                if (nodeId === '') throw new Error('Failed to send request');
-                testResult[nodeId] = (testResult[nodeId] || 0) + 1;
+                if (nodeId === '') {
+                    testResult['failed'] = (testResult['failed'] || 0) + 1;
+                } else {
+                    testResult[nodeId] = (testResult[nodeId] || 0) + 1;
+                }
             }
-            setTestResult({...testResult});
+            setTestResult({ ...testResult });
         }
         toast.success('Testing completed', { id: toastId });
-        
     }
 
     return (
@@ -151,7 +153,12 @@ export default function Emulator() {
                             </div>
                             <hr />
                             <div className="mb-3">
-                                <label className="form-label">節點資訊</label>
+                                <label className="form-label">節點資訊</label> 
+                                {testResult['failed'] > 0 && (
+                                    <span className="text-danger ms-2">
+                                        {testResult['failed']} / 100 failed
+                                    </span>
+                                )}
                                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                                     {nodeList.length === 0 ? (
                                         <p className="text-muted">尚無節點</p>
