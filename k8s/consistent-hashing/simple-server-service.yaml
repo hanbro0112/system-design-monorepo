@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-server
+  labels:
+    app: simple-server
+  namespace: dev
+spec:
+  selector:
+    app: simple-server # 匹配 Deployment 中的 labels
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80 # Service 的端口
+      targetPort: 80 # Pod 中容器的端口

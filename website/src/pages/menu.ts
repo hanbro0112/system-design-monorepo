@@ -60,6 +60,21 @@ export default {
         //         }
         //     ]
         // }
+        {
+            id: 'consistent-hashing',
+            title: 'Consistent Hashing',
+            type: 'group',
+            icon: 'icon-ui',
+            children: [
+                {
+                    id: 'consistent-hashing',
+                    title: 'Emulator',
+                    type: 'item',
+                    icon: 'feather icon-box',
+                    url: '/consistent-hashing',
+                }
+            ]
+        }
     ]
 }
 
