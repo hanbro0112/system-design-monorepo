@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import config from './config';
 import controller from './rate-limiter'
 
 const app = express();
@@ -8,11 +7,12 @@ app.use(cors());
 app.use(express.json());
 
 
-app.get('/', (req, res) => {
-    res.status(200).send('Distributed Rate Limiter Server is running');
+app.get('/rate-limiter', async (req, res) => {
+    const result = await controller.getRateLimiterList();
+    res.status(200).send(result);
 });
 
-app.get('/:key/:method', async (req, res) => {
+app.get('/rate-limiter/:key/:method', async (req, res) => {
     const { key, method } = req.params;
     const result = await controller.runRateLimiter(key, method);
     if (result) {
@@ -20,11 +20,6 @@ app.get('/:key/:method', async (req, res) => {
     } else {
         res.status(429).send('Rejected!');
     }
-});
-
-app.get('/rate-limiter', async (req, res) => {
-    const result = await controller.getRateLimiterList();
-    res.status(200).send(result);
 });
 
 app.post('/rate-limiter/:key', async (req, res) => {
@@ -40,7 +35,7 @@ app.delete('/rate-limiter/:key/:method', async (req, res) => {
     res.status(200).send(result);
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
     console.log(`Distributed-Rate-Limiter Server is running on http://localhost:${PORT}`);
 });

@@ -1,7 +1,7 @@
 import { rateLimiterList } from '#/distributed-rate-limiter/src/rate-limiter/typeModel';
 
 export async function getRateLimiterList(): Promise<rateLimiterList> {
-    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}/rate-limiter`;
+    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}`;
     try {
 
         const response = await fetch(url, {
@@ -19,7 +19,7 @@ export async function getRateLimiterList(): Promise<rateLimiterList> {
 }
 
 export async function setRateLimiter(key: string, method: string, config: Record<string, number>): Promise<boolean> {
-    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}/rate-limiter/${key}`;
+    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}/${key}`;
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -39,7 +39,7 @@ export async function setRateLimiter(key: string, method: string, config: Record
 }
 
 export async function deleteRateLimiter(key: string, method: string): Promise<boolean> {
-    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}/rate-limiter/${key}/${method}`;
+    const url = `${process.env.NEXT_PUBLIC_DISTRIBUTED_RATE_LIMITER_URL}/${key}/${method}`;
     try {
         const response = await fetch(url, {
             method: 'DELETE',
