@@ -8,6 +8,7 @@ import { nodeList, point } from './type';
 
 import { sendRequestToNode } from '@/api/ConsistentHashingService';
 import toast from 'react-hot-toast';
+
 const fixedKey = new Array(100).fill(0).map((_, index) => `key-${index}`);
 
 // 大圓的樣式
@@ -51,23 +52,32 @@ export default function Emulator() {
     const [testResult, setTestResult] = useState<{ [key: string]: number }>({});
 
     useEffect(() => {
-        dispatch(fetchData());
+       dispatch(fetchData());         
     }, [dispatch]);
+
+    useEffect(() => {
+        if (nodeList.length === 0) {
+            setTestResult({});
+        }
+    }, [nodeList]);
 
     const handleAddNode = () => {
         dispatch(addNode(virtualPointsNumber));
     }
 
-    const handleRemoveNode = (nodeId: string) => {
-        dispatch(removeNode(nodeId));
+    const handleRemoveNode = async (nodeId: string) => {
+        const success = await dispatch(removeNode(nodeId));
     }
 
     const handleTestingNode = async () => {
         const toastId = toast.loading('Testing nodes...');
         const testResult: { [key: string]: number } = {};
+        let latency = 0;
         for (let i = 0; i < fixedKey.length; i += 20) {
             const batch = fixedKey.slice(i, i + 20);
+            const startTime = Date.now();
             const responses = await Promise.all(batch.map(key => sendRequestToNode(key)));
+            const endTime = Date.now();
             for (let nodeId of responses) {
                 if (nodeId === '') {
                     testResult['failed'] = (testResult['failed'] || 0) + 1;
@@ -75,7 +85,8 @@ export default function Emulator() {
                     testResult[nodeId] = (testResult[nodeId] || 0) + 1;
                 }
             }
-            setTestResult({ ...testResult });
+            latency += (endTime - startTime);
+            setTestResult({ ...testResult, latency: Math.trunc(latency / (1 + i / 20)) });
         }
         toast.success('Testing completed', { id: toastId });
     }
@@ -154,6 +165,12 @@ export default function Emulator() {
                             <hr />
                             <div className="mb-3">
                                 <label className="form-label">節點資訊</label> 
+                                {testResult['latency'] && (
+                                    <span className="ms-2">
+                                        {testResult['latency']} ms
+                                    </span>
+                                )}
+                                <br />
                                 {testResult['failed'] > 0 && (
                                     <span className="text-danger ms-2">
                                         {testResult['failed']} / 100 failed
