@@ -1,6 +1,6 @@
 # System design practice
 
-實作 《系統設計面試指南》 介紹的案例，以 k8s 架設使用工具
+實作 《系統設計面試指南》 介紹的服務，以 k8s 架設使用工具
 
 -  分散式限流器
 -  一致性哈希
@@ -24,6 +24,8 @@
   5. 滑動窗口日誌 (Sliding Window Log)
 
 - 演示：
+  <img src="images/img1.png" alt="操作介面">
+  <img src="images/img2.png" alt="圖表">
 
 # consistent-hashing
 
@@ -42,10 +44,10 @@
   2. 虛擬節點
 
 - 演示：
+  <img src="images/img3.png" alt="操作介面">
+  <img src="images/img4.png" alt="操作介面">
 
 - *P.S. 原本預計使用 k8s scale 來擴縮容，但是它不能指定節點刪除*
-
-
 
 # Start
 - Environment:
@@ -55,6 +57,19 @@
   - Just: https://github.com/casey/just
 
 - Steps:
+  - 前端: 
+    - `just frontend-dev`
+  - 後端: 
+    - `just start` 
+    - `just stop`
+
+- Development:
+  - 更新服務的 image 須由本地端 push 到 docker hub，再去做 kubectl set image
+    - `just docker-push`
+    - `just update` 
+  - docker hub & pull image 都是使用 *hanbro0112* 個人帳號地址
+  - justfile 包含所有開發使用的命令
+
 
 # Reference
 frontend template: https://codedthemes.com/item/datta-able-react-free-admin-template
