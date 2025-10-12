@@ -25,6 +25,7 @@
 
 - 演示：
   <img src="images/img1.png" alt="操作介面">
+
   <img src="images/img2.png" alt="圖表">
 
 # consistent-hashing
@@ -45,6 +46,7 @@
 
 - 演示：
   <img src="images/img3.png" alt="操作介面">
+
   <img src="images/img4.png" alt="操作介面">
 
 - *P.S. 原本預計使用 k8s scale 來擴縮容，但是它不能指定節點刪除*
@@ -64,12 +66,12 @@
     - `just stop`
 
 - Development:
+  - justfile 包含所有開發使用的命令
   - 更新服務的 image 須由本地端 push 到 docker hub，再去做 kubectl set image
     - `just docker-push`
     - `just update` 
-  - docker hub & pull image 都是使用 *hanbro0112* 個人帳號地址
-  - justfile 包含所有開發使用的命令
-
+  - docker hub & pull image 使用 *hanbro0112* 帳號地址 (change to yourself if update)
+  
 
 # Reference
 frontend template: https://codedthemes.com/item/datta-able-react-free-admin-template
