@@ -1,42 +1,77 @@
 # System design practice
 
-https://github.com/casey/just
+實作 《系統設計面試指南》 介紹的服務，以 k8s 架設使用工具
 
-frontend framework: https://codedthemes.com/item/datta-able-react-free-admin-template
+-  分散式限流器
+-  一致性哈希
+-  
 
 # distributed-rate-limiter
-- 實作:
- 1. 限流服務
- 2. api 層掛載模組
 
-- 集中式資料儲存: redis 集群, k8s
+- 前端：
+  - 設定限流演算法和參數
+  - 模擬向 api 發送請求，隨機 burst request
 
-- 限流目標：user, api
+- 後端：
+  - Redis 儲存限流器設定
+  - Lua 實作演算法
 
-- 演算法
- 1. 固定窗口計數器 (Fixed Window Counter)
- 2. 滑動窗口日誌 (Sliding Window Log)
- 3. 令牌桶 (Token Bucket)
- 4. 漏桶 (Leaky Bucket)
- 5. 滑動窗口計數器 (Sliding Window Counter)
+- 演算法：
+  1. 令牌桶 (Token Bucket)
+  2. 漏桶 (Leaky Bucket)
+  3. 固定窗口計數器 (Fixed Window Counter)
+  4. 滑動窗口計數器 (Sliding Window Counter)
+  5. 滑動窗口日誌 (Sliding Window Log)
 
-- 可觀察性: 延遲, 請求率 
+- 演示：
+  <img src="images/img1.png" alt="操作介面">
 
-- 操作:
- 1. 新增/設定 api  
- 2. 新增/設定 使用者請求（暫定網頁端 request）
- 3. 重置/清除 
-
-- 動態更改限流設定: 節點定期更新, 發佈訂閱更新 (redis pubsub)
+  <img src="images/img2.png" alt="圖表">
 
 # consistent-hashing
-- 實作:
-  1. 服務擴容, 縮容 (k8s)
 
-- 演算法:
+- 前端：
+  - 添加節點和設定虛擬節點數量
+  - 刪除節點
+  - 固定 key 發送請求，紀錄節點處理數目
+
+- 後端：
+  - 使用 k8s 操作節點
+  - 前端發送請求會實際轉發到節點
+  - 本地快取，定期更新節點資訊
+
+- 演算法：
   1. 哈希環
   2. 虛擬節點
+
+- 演示：
+  <img src="images/img3.png" alt="操作介面">
+
+  <img src="images/img4.png" alt="操作介面">
+
+- *P.S. 原本預計使用 k8s scale 來擴縮容，但是它不能指定節點刪除*
+
+# Start
+- Environment:
+  - Node.js v20
+  - Docker Desktop 
+  - K8s: Minikube
+  - Just: https://github.com/casey/just
+
+- Steps:
+  - 前端: 
+    - `just frontend-dev`
+  - 後端: 
+    - `just start` 
+    - `just stop`
+
+- Development:
+  - justfile 包含所有開發使用的命令
+  - 更新服務的 image 須由本地端 push 到 docker hub，再去做 kubectl set image
+    - `just docker-push`
+    - `just update` 
+  - docker hub & pull image 使用 *hanbro0112* 帳號地址 (change to yourself if update)
   
-- 操作:
-  1. 增加 / 刪除節點
-  2. 使用者請求
+
+# Reference
+frontend template: https://codedthemes.com/item/datta-able-react-free-admin-template
